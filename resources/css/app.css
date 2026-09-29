@@ -1,0 +1,291 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Code', monospace;
+
+    --color-brand-50: oklch(0.977 0.014 165);
+    --color-brand-100: oklch(0.946 0.033 163);
+    --color-brand-200: oklch(0.896 0.06 164);
+    --color-brand-300: oklch(0.833 0.088 164);
+    --color-brand-400: oklch(0.765 0.116 164);
+    --color-brand-500: oklch(0.696 0.145 163);
+    --color-brand-600: oklch(0.596 0.141 162);
+    --color-brand-700: oklch(0.508 0.121 162);
+    --color-brand-800: oklch(0.437 0.104 161);
+    --color-brand-900: oklch(0.379 0.088 159);
+    --color-brand-950: oklch(0.263 0.065 158);
+
+    --color-ink-50: oklch(0.985 0.002 250);
+    --color-ink-100: oklch(0.968 0.004 250);
+    --color-ink-200: oklch(0.929 0.007 250);
+    --color-ink-300: oklch(0.869 0.011 250);
+    --color-ink-400: oklch(0.704 0.017 250);
+    --color-ink-500: oklch(0.554 0.018 250);
+    --color-ink-600: oklch(0.446 0.018 250);
+    --color-ink-700: oklch(0.372 0.019 250);
+    --color-ink-800: oklch(0.279 0.019 250);
+    --color-ink-900: oklch(0.208 0.017 250);
+    --color-ink-950: oklch(0.145 0.014 250);
+
+    --shadow-card: 0 1px 2px 0 rgb(20 30 45 / 0.04), 0 1px 3px 0 rgb(20 30 45 / 0.06);
+    --shadow-raise: 0 4px 6px -1px rgb(20 30 45 / 0.07), 0 2px 4px -2px rgb(20 30 45 / 0.05);
+    --shadow-pop: 0 10px 15px -3px rgb(20 30 45 / 0.08), 0 4px 6px -4px rgb(20 30 45 / 0.05);
+    --shadow-glow: 0 0 0 1px var(--color-brand-600);
+
+    --radius-card: 0.875rem;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-ink-100 font-sans text-ink-800 antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-brand-600;
+    }
+
+    ::selection {
+        @apply bg-brand-200 text-brand-950;
+    }
+
+    /* Slim, unobtrusive scrollbars that match the shell. */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-ink-300) transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        @apply rounded-full bg-ink-300;
+        border: 3px solid transparent;
+        background-clip: content-box;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        @apply bg-ink-400;
+    }
+}
+
+@layer components {
+    .card {
+        @apply rounded-card border border-ink-200/80 bg-white shadow-card;
+    }
+
+    .card-header {
+        @apply flex flex-wrap items-center justify-between gap-3 border-b border-ink-200/80 px-4 py-3 sm:px-5;
+    }
+
+    .card-title {
+        @apply text-sm font-semibold tracking-tight text-ink-900 sm:text-base;
+    }
+
+    .card-body {
+        @apply p-4 sm:p-5;
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold
+               transition-all duration-150 select-none whitespace-nowrap
+               disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-sm {
+        @apply gap-1.5 px-2.5 py-1.5 text-xs;
+    }
+
+    .btn-lg {
+        @apply px-5 py-2.5 text-[0.9375rem];
+    }
+
+    .btn-primary {
+        @apply bg-brand-600 text-white shadow-raise hover:bg-brand-700 active:bg-brand-800;
+    }
+
+    .btn-secondary {
+        @apply border border-ink-300 bg-white text-ink-700 shadow-card hover:bg-ink-50 hover:text-ink-900 active:bg-ink-100;
+    }
+
+    .btn-ghost {
+        @apply text-ink-600 hover:bg-ink-100 hover:text-ink-900;
+    }
+
+    .btn-danger {
+        @apply bg-rose-600 text-white shadow-raise hover:bg-rose-700 active:bg-rose-800;
+    }
+
+    .btn-soft {
+        @apply bg-brand-50 text-brand-700 ring-1 ring-brand-600/15 hover:bg-brand-100;
+    }
+
+    .btn-icon {
+        @apply inline-flex size-9 items-center justify-center rounded-lg text-ink-500
+               transition-colors hover:bg-ink-100 hover:text-ink-800;
+    }
+
+    .label {
+        @apply mb-1.5 block text-sm font-medium text-ink-700;
+    }
+
+    .input {
+        @apply block w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900
+               shadow-card transition placeholder:text-ink-400
+               focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 focus:outline-none;
+    }
+
+    .input-sm {
+        @apply px-2.5 py-1.5 text-xs;
+    }
+
+    .select {
+        @apply block w-full cursor-pointer appearance-none rounded-lg border border-ink-300 bg-white px-3 py-2
+               pr-9 text-sm text-ink-900 shadow-card transition
+               focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 focus:outline-none;
+        background-position: right 0.6rem center;
+        background-size: 1.1em;
+        background-repeat: no-repeat;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' class='size-4 text-ink-500'%3E%3Cpath stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.75' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    }
+
+    .select-sm {
+        @apply px-2.5 py-1.5 text-xs;
+    }
+
+    .checkbox {
+        @apply size-4 cursor-pointer rounded border-ink-300 text-brand-600 transition focus:ring-2 focus:ring-brand-500/30;
+    }
+
+    .input-error {
+        @apply border-rose-400 focus:border-rose-500 focus:ring-rose-500/25;
+    }
+
+    .help-error {
+        @apply mt-1.5 flex items-start gap-1 text-xs font-medium text-rose-600;
+    }
+
+    .badge {
+        @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem] font-semibold whitespace-nowrap ring-1 ring-inset;
+    }
+
+    .table-wrap {
+        @apply overflow-x-auto;
+    }
+
+    .table {
+        @apply w-full min-w-full border-collapse text-left text-sm;
+    }
+
+    .table thead th {
+        @apply border-b border-ink-200 bg-ink-50/80 px-3 py-3 text-[0.6875rem] font-semibold
+               tracking-wider text-ink-500 uppercase whitespace-nowrap sm:px-4;
+    }
+
+    .table tbody td {
+        @apply border-b border-ink-100 px-3 py-3 align-middle sm:px-4;
+    }
+
+    .table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    .table tbody tr {
+        @apply transition-colors hover:bg-brand-50/40;
+    }
+
+    .link {
+        @apply font-medium text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline;
+    }
+
+    .nav-link {
+        @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-600
+               transition-colors duration-150 hover:bg-ink-100 hover:text-ink-900;
+    }
+
+    .nav-link-active {
+        @apply bg-brand-50 text-brand-700 hover:bg-brand-100 hover:text-brand-800;
+    }
+
+    .section-title {
+        @apply text-xs font-semibold tracking-wider text-ink-400 uppercase;
+    }
+
+    .skeleton {
+        @apply animate-pulse rounded-lg bg-ink-200/70;
+    }
+
+    /* Bars grow from zero on first paint, staggered so the eye reads left to right. */
+    .bar-animate {
+        width: 0;
+        animation: grow-bar 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes grow-bar {
+        from {
+            width: 0;
+        }
+        to {
+            width: var(--w, 0%);
+        }
+    }
+
+    .scroll-fade {
+        mask-image: linear-gradient(to bottom, transparent, black 0.5rem, black calc(100% - 0.5rem), transparent);
+    }
+}
+
+@layer utilities {
+    .animate-in-up {
+        animation: in-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes in-up {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    .grid-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (min-width: 640px) {
+        .grid-cards {
+            grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

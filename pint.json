@@ -1,0 +1,23 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "declare_strict_types": false,
+        "not_operator_with_successor_space": true
+    },
+    "finder": [
+        "app",
+        "bootstrap",
+        "config",
+        "database",
+        "routes",
+        "tests"
+    ],
+    "exclude": [
+        "bootstrap/cache",
+        "storage",
+        "vendor",
+        "scripts",
+        "node_modules",
+        "public/build"
+    ]
+}
