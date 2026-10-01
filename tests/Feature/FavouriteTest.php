@@ -52,12 +52,12 @@ class FavouriteTest extends TestCase
     {
         $keep = Product::factory()->create();
         $merge = Product::factory()->create();
-        $user = User::factory()->create(['username' => 'aung']);
+        $user = User::factory()->create(['email' => 'aung@goldengate.test']);
 
         $this->post(route('favourites.toggle'), ['product_id' => $keep->id]);
         $this->post(route('favourites.toggle'), ['product_id' => $merge->id]);
 
-        $this->post(route('login'), ['username' => 'aung', 'password' => 'password']);
+        $this->post(route('login'), ['email' => 'aung@goldengate.test', 'password' => 'password']);
 
         $this->assertAuthenticated();
 
@@ -69,12 +69,12 @@ class FavouriteTest extends TestCase
     public function test_a_duplicate_favourite_is_not_created_after_merging(): void
     {
         $product = Product::factory()->create();
-        $user = User::factory()->create(['username' => 'thein']);
+        $user = User::factory()->create(['email' => 'thein@goldengate.test']);
 
         Favourite::query()->create(['user_id' => $user->id, 'product_id' => $product->id]);
 
         $this->post(route('favourites.toggle'), ['product_id' => $product->id]);
-        $this->post(route('login'), ['username' => 'thein', 'password' => 'password']);
+        $this->post(route('login'), ['email' => 'thein@goldengate.test', 'password' => 'password']);
 
         $this->assertSame(1, Favourite::query()->where('user_id', $user->id)->where('product_id', $product->id)->count());
     }

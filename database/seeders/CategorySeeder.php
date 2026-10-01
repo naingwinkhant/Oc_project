@@ -76,6 +76,9 @@ class CategorySeeder extends Seeder
                     'name' => $name,
                     'description' => $config['description'],
                     'color' => $config['color'],
+                    // A representative mark per department, so the classification
+                    // lists can be scanned by picture as well as by name.
+                    'icon' => (new Category(['name' => $name]))->iconName(),
                     'position' => $position++,
                     'is_active' => true,
                 ],
@@ -89,6 +92,7 @@ class CategorySeeder extends Seeder
                     [
                         'parent_id' => $parent->id,
                         'name' => $childName,
+                        'icon' => (new Category(['name' => $childName, 'parent_id' => $parent->id]))->iconName(),
                         'position' => $childPosition++,
                         'is_active' => true,
                     ],

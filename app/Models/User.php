@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\AccountStatus;
 use App\Enums\Role;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -24,6 +26,14 @@ class User extends Authenticatable
         'phone',
         'avatar',
         'is_active',
+        'theme',
+        // Written by the controllers, never by a form: a request must not be
+        // able to make its own account accepted.
+        'status',
+        'approved_at',
+        'approved_by',
+        'decided_at',
+        'decided_by',
     ];
 
     protected $hidden = [
@@ -38,7 +48,10 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'approved_at' => 'datetime',
+            'decided_at' => 'datetime',
             'role' => Role::class,
+            'status' => AccountStatus::class,
         ];
     }
 
@@ -74,6 +87,16 @@ class User extends Authenticatable
             ->first();
     }
 
+    /**
+     * Sign-in is by email address.
+     */
+    public static function findByEmail(string $email): ?self
+    {
+        return static::query()
+            ->whereRaw('LOWER(email) = ?', [mb_strtolower(trim($email))])
+            ->first();
+    }
+
     public function canManageCatalog(): bool
     {
         return in_array($this->role, [Role::Admin, Role::Manager], true);
@@ -82,6 +105,110 @@ class User extends Authenticatable
     public function canManageUsers(): bool
     {
         return $this->isAdmin();
+    }
+
+    /**
+     * Anyone who works here, as opposed to a shopper. Staff also get the
+     * notices that are marked as internal only.
+     */
+    public function isStaff(): bool
+    {
+        return in_array($this->role, [Role::Admin, Role::Manager, Role::Staff], true);
+    }
+
+    /**
+     * Has this person chosen a password yet?
+     *
+     * An account is created with an email, a username and a role only, so a
+     * null password is a normal state rather than a broken one — and it is the
+     * reason an empty password can never be accepted at sign-in.
+     */
+    public function hasPassword(): bool
+    {
+        return $this->password !== null && $this->password !== '';
+    }
+
+    /**
+     * Has an administrator or manager accepted this account yet?
+     *
+     * An account is created pending, so a username nobody has agreed to is not
+     * a way into the shop. It can be signed into until then.
+     */
+    public function isApproved(): bool
+    {
+        return $this->status === AccountStatus::Approved;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === AccountStatus::Pending;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === AccountStatus::Rejected;
+    }
+
+    /**
+     * Accept the account, recording who did it and when.
+     */
+    public function approve(User $approver): void
+    {
+        $this->forceFill([
+            'status' => AccountStatus::Approved,
+            'approved_at' => now(),
+            'approved_by' => $approver->id,
+            'decided_by' => $approver->id,
+            'decided_at' => now(),
+        ])->save();
+    }
+
+    /**
+     * Turn the account down. It stays on file so the history is not lost, but
+     * it can never sign in.
+     */
+    public function reject(User $approver): void
+    {
+        $this->forceFill([
+            'status' => AccountStatus::Rejected,
+            'approved_at' => null,
+            'approved_by' => null,
+            'decided_by' => $approver->id,
+            'decided_at' => now(),
+        ])->save();
+    }
+
+    /**
+     * Withdraw an acceptance, which locks the account out again and puts it
+     * back in the queue for somebody to look at.
+     */
+    public function revokeApproval(): void
+    {
+        $this->forceFill([
+            'status' => AccountStatus::Pending,
+            'approved_at' => null,
+            'approved_by' => null,
+            'decided_by' => null,
+            'decided_at' => null,
+        ])->save();
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'approved_by');
+    }
+
+    public function decider(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'decided_by');
+    }
+
+    /**
+     * Where this person lands after signing in.
+     */
+    public function landingUrl(): string
+    {
+        return route($this->role->homeRoute());
     }
 
     public function initials(): string
@@ -106,6 +233,14 @@ class User extends Authenticatable
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Accounts nobody has looked at yet.
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', AccountStatus::Pending);
     }
 
     public function scopeSearch(Builder $query, ?string $term): Builder

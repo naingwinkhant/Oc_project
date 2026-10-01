@@ -147,6 +147,43 @@ unset($__defined_vars, $__key, $__value); ?>
                 </div>
 
                 <div>
+                    <label for="icon" class="label">Representative icon</label>
+                    <div class="flex flex-wrap gap-1.5" data-icon-picker>
+                        <?php $__currentLoopData = \App\Models\Category::ICONS; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $icon): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <label class="<?php echo \Illuminate\Support\Arr::toCssClasses([
+                                'grid size-9 cursor-pointer place-items-center rounded-lg border transition',
+                                'border-brand-600 bg-brand-50 text-brand-700' => old('icon', $category->icon ?? 'basket') === $icon,
+                                'border-ink-200 text-ink-500 hover:border-ink-300 hover:bg-ink-50' => old('icon', $category->icon ?? 'basket') !== $icon,
+                            ]); ?>" title="<?php echo e(ucfirst(str_replace('-', ' ', $icon))); ?>">
+                                <input type="radio" name="icon" value="<?php echo e($icon); ?>" class="sr-only"
+                                       <?php if(old('icon', $category->icon ?? 'basket') === $icon): echo 'checked'; endif; ?>>
+                                <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => $icon,'class' => 'size-4.5']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($icon),'class' => 'size-4.5']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                            </label>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                    <p class="help">Shown beside the classification in the catalogue, the navigation and the footer.</p>
+                </div>
+
+                <div>
                     <label for="is_active" class="label">Visibility</label>
                     <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-ink-200 p-3 transition hover:bg-ink-50">
                         <input type="checkbox" name="is_active" value="1" id="is_active"

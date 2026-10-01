@@ -56,13 +56,21 @@
             <x-price :product="$product" size="sm" class="min-w-0" />
 
             @if ($product->isSellable())
-                <form method="POST" action="{{ route('cart.store') }}" class="shrink-0">
+                <form method="POST" action="{{ route('cart.store') }}" class="shrink-0" data-add-to-cart="{{ $product->id }}">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="btn btn-soft btn-sm" title="Add {{ $product->name }} to cart">
+                    <button type="submit" class="btn btn-soft btn-sm"
+                            title="Add {{ $product->name }} to cart"
+                            @if ($product->stock < 10)
+                                aria-label="Add {{ $product->name }} to cart, {{ $product->stock }} left"
+                            @endif>
                         <x-icon name="cart" class="size-3.5" />
-                        <span class="sr-only">Add to cart</span>
+                        @if ($product->stock < 10)
+                            <span class="text-[0.625rem] font-bold tabular-nums">{{ $product->stock }}</span>
+                        @else
+                            <span class="sr-only">Add to cart</span>
+                        @endif
                     </button>
                 </form>
             @endif

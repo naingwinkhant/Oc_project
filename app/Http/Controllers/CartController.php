@@ -31,15 +31,24 @@ class CartController extends Controller
         ]);
 
         $product = Product::query()->active()->findOrFail($data['product_id']);
+        $asked = (int) ($data['quantity'] ?? 1);
 
         try {
-            $this->cart->add($product, (int) ($data['quantity'] ?? 1));
+            $added = $this->cart->add($product, $asked);
         } catch (\DomainException $e) {
             return back()->with('error', $e->getMessage());
         }
 
         if ($request->boolean('buy_now')) {
             return redirect()->route('checkout.create');
+        }
+
+        // The shelf is the limit: say so rather than silently under-delivering.
+        if ($added < $asked) {
+            return back()->with(
+                'status',
+                'Only '.$product->stock.' '.$product->unit.' of '.$product->name.' left — we added '.$added.'.'
+            );
         }
 
         return back()->with('status', $product->name.' added to your cart.');
@@ -52,10 +61,17 @@ class CartController extends Controller
             'quantity' => ['required', 'integer', 'min:0', 'max:99'],
         ]);
 
-        $this->cart->setQuantity((int) $data['product_id'], (int) $data['quantity']);
+        $asked = (int) $data['quantity'];
+        $product = Product::query()->find($data['product_id']);
 
-        if ((int) $data['quantity'] === 0) {
+        $this->cart->setQuantity((int) $data['product_id'], $asked);
+
+        if ($asked <= 0) {
             return back()->with('status', 'Item removed from your cart.');
+        }
+
+        if ($product && $asked > $product->stock) {
+            return back()->with('status', 'Only '.$product->stock.' '.$product->unit.' of '.$product->name.' left.');
         }
 
         return back()->with('status', 'Cart updated.');

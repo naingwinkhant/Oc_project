@@ -7,6 +7,23 @@
 @endsection
 
 <x-layouts.app :title="'Order '.$order->order_number" heading="Order details" :description="$order->customer_name.' · '.$order->placed_at?->format('j M Y, g:i A')">
+    <x-slot:actions>
+        {{-- Order actions are a manager or administrator job, so the controls are
+             not offered to staff rather than bouncing them off a 403. --}}
+        @if (auth()->user()?->canManageCatalog())
+            @unless ($order->status->isClosed())
+                <a href="{{ route('admin.orders.edit', $order) }}" class="btn btn-secondary btn-sm">
+                    <x-icon name="pencil" class="size-4" /> Edit details
+                </a>
+            @endunless
+
+            <x-delete-button name="Delete order" icon="trash"
+                            :action="route('admin.orders.destroy', $order)"
+                            :confirm="'Delete order '.$order->order_number.'? This cannot be undone.'"
+                            class="btn btn-secondary btn-sm text-rose-600 hover:bg-rose-50 hover:text-rose-700" />
+        @endif
+    </x-slot:actions>
+
     <div class="grid items-start gap-5 lg:grid-cols-3">
         <div class="space-y-5 lg:col-span-2">
             <section class="card overflow-hidden">
@@ -110,15 +127,27 @@
                 <div class="card-body space-y-3 text-sm">
                     @if ($order->paid_at)
                         <p class="text-xs text-emerald-700">Paid {{ $order->paid_at->diffForHumans() }}</p>
-                    @else
+                    @endif
+
+                    {{-- Only the moves the till is allowed to make are offered, so
+                         a stale page cannot offer to reopen a closed order. --}}
+                    @foreach ($order->status->options() as $option)
                         <form method="POST" action="{{ route('admin.orders.status', $order) }}"
-                              onsubmit="return confirm('Cancel this order?')">
+                              @if ($option === \App\Enums\OrderStatus::Cancelled) onsubmit="return confirm('Cancel this order?')" @endif>
                             @csrf
-                            <input type="hidden" name="status" value="cancelled">
-                            <button type="submit" class="btn btn-secondary btn-sm w-full text-rose-600 hover:bg-rose-50">
-                                <x-icon name="x" class="size-3.5" /> Cancel order
+                            <input type="hidden" name="status" value="{{ $option->value }}">
+                            <button type="submit"
+                                    class="btn btn-sm w-full {{ $option === \App\Enums\OrderStatus::Completed ? 'btn-primary' : 'btn-secondary' }} {{ $option === \App\Enums\OrderStatus::Cancelled ? 'text-rose-600 hover:bg-rose-50' : '' }}">
+                                <x-icon :name="$option === \App\Enums\OrderStatus::Completed ? 'check' : ($option === \App\Enums\OrderStatus::Refunded ? 'refresh' : 'x')" class="size-3.5" />
+                                {{ $option === \App\Enums\OrderStatus::Completed ? 'Mark completed' : ($option === \App\Enums\OrderStatus::Refunded ? 'Mark refunded' : 'Cancel order') }}
                             </button>
                         </form>
+                    @endforeach
+
+                    @if ($order->status->options() === [])
+                        <p class="text-xs text-ink-500">
+                            This order is closed, so there is nothing left to change.
+                        </p>
                     @endif
 
                     <div class="border-t border-ink-100 pt-3">

@@ -127,50 +127,24 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d); ?>
 <?php endif; ?>
                 </div>
-
-                <?php if (isset($component)) { $__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-field','data' => ['field' => 'password','label' => $isEdit ? 'New password' : 'Password','type' => 'password','required' => ! $isEdit,'hint' => $isEdit ? 'Leave blank to keep the current password.' : null]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('form-field'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['field' => 'password','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($isEdit ? 'New password' : 'Password'),'type' => 'password','required' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(! $isEdit),'hint' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($isEdit ? 'Leave blank to keep the current password.' : null)]); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d)): ?>
-<?php $attributes = $__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d; ?>
-<?php unset($__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d)): ?>
-<?php $component = $__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d; ?>
-<?php unset($__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d); ?>
-<?php endif; ?>
-
-                <?php if (isset($component)) { $__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.form-field','data' => ['field' => 'password_confirmation','label' => $isEdit ? 'Confirm new password' : 'Confirm password','type' => 'password','required' => ! $isEdit]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('form-field'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['field' => 'password_confirmation','label' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($isEdit ? 'Confirm new password' : 'Confirm password'),'type' => 'password','required' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(! $isEdit)]); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d)): ?>
-<?php $attributes = $__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d; ?>
-<?php unset($__attributesOriginalf4c8ecf26ef77d4de25edf56eae3a34d); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d)): ?>
-<?php $component = $__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d; ?>
-<?php unset($__componentOriginalf4c8ecf26ef77d4de25edf56eae3a34d); ?>
-<?php endif; ?>
             </div>
         </section>
+
+        <?php if (! ($isEdit)): ?>
+            
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Their password</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-sm leading-relaxed text-ink-600">
+                        A one-time link is created with the account. Send it to
+                        <?php echo e($user->name ?: 'them'); ?> and they choose their own password — it is never
+                        typed here, so it cannot end up in a screenshot or a log.
+                    </p>
+                </div>
+            </section>
+        <?php endif; ?>
 
         <section class="card">
             <div class="card-header">

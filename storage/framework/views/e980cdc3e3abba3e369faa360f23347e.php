@@ -41,6 +41,26 @@ unset($__defined_vars, $__key, $__value); ?>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo e($title ? $title.' · ' : ''); ?><?php echo e(config('app.name')); ?></title>
     <link rel="icon" href="/favicon.ico">
+    <?php if (isset($component)) { $__componentOriginald165ea9fefcd025b5d835007adfd5466 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald165ea9fefcd025b5d835007adfd5466 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.theme-script','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('theme-script'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald165ea9fefcd025b5d835007adfd5466)): ?>
+<?php $attributes = $__attributesOriginald165ea9fefcd025b5d835007adfd5466; ?>
+<?php unset($__attributesOriginald165ea9fefcd025b5d835007adfd5466); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald165ea9fefcd025b5d835007adfd5466)): ?>
+<?php $component = $__componentOriginald165ea9fefcd025b5d835007adfd5466; ?>
+<?php unset($__componentOriginald165ea9fefcd025b5d835007adfd5466); ?>
+<?php endif; ?>
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 </head>
 <body class="bg-ink-100">

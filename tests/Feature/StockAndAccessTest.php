@@ -85,18 +85,18 @@ class StockAndAccessTest extends TestCase
 
     public function test_guests_are_redirected_to_login(): void
     {
-        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
-        $this->get(route('admin.products.index'))->assertRedirect(route('login'));
+        $this->get(route('admin.dashboard'))->assertRedirect(route('admin.login.php'));
+        $this->get(route('admin.products.index'))->assertRedirect(route('admin.login.php'));
     }
 
     public function test_disabled_account_cannot_sign_in(): void
     {
-        $user = User::factory()->disabled()->create(['username' => 'suspended', 'email' => 'off@supermarket.test']);
+        User::factory()->disabled()->create(['email' => 'off@supermarket.test']);
 
         $this->post(route('login'), [
-            'username' => 'suspended',
+            'email' => 'off@supermarket.test',
             'password' => 'password',
-        ])->assertSessionHasErrors('username');
+        ])->assertSessionHasErrors('email');
 
         $this->assertGuest();
     }
@@ -144,28 +144,55 @@ class StockAndAccessTest extends TestCase
             ->assertSessionHasErrors('role');
     }
 
-    public function test_registration_creates_a_staff_account(): void
+    public function test_there_is_no_public_sign_up(): void
     {
-        $this->post(route('register'), [
+        // Customers order as guests; team accounts come from the dashboard.
+        $this->get('/register')->assertNotFound();
+        $this->post('/register', [
             'username' => 'newhire',
             'name' => 'New Hire',
             'email' => 'newhire@supermarket.test',
             'password' => 'secret1234',
             'password_confirmation' => 'secret1234',
-        ])->assertRedirect(route('admin.dashboard'));
+        ])->assertNotFound();
 
-        $this->assertAuthenticated();
-        $this->assertSame(Role::Staff, User::where('email', 'newhire@supermarket.test')->firstOrFail()->role);
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['email' => 'newhire@supermarket.test']);
+    }
+
+    public function test_a_guest_can_browse_and_order_without_an_account(): void
+    {
+        $product = Product::factory()->create(['stock' => 5]);
+
+        $this->get(route('catalog.index'))->assertOk();
+        $this->get(route('services'))->assertOk();
+        $this->get(route('information'))->assertOk();
+        $this->get(route('settings'))->assertOk();
+
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1])
+            ->assertRedirect();
+
+        $this->post(route('checkout.store'), [
+            'customer_name' => 'Aung Kyaw',
+            'phone' => '09 380 000 00',
+            'email' => 'aung@example.com',
+            'delivery_address' => 'No. 12, Baho Road, Kamayut',
+            'township' => 'Kamayut',
+            'payment_gateway' => 'sandbox',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertGuest();
+        $this->assertDatabaseCount('orders', 1);
     }
 
     public function test_sign_in_records_last_login(): void
     {
-        $user = User::factory()->create(['username' => 'staff', 'email' => 'staff@supermarket.test']);
+        $user = User::factory()->create(['email' => 'staff@supermarket.test']);
 
         $this->post(route('login'), [
-            'username' => 'staff',
+            'email' => 'staff@supermarket.test',
             'password' => 'password',
-        ])->assertRedirect(route('admin.dashboard'));
+        ])->assertRedirect(route($user->role->homeRoute()));
 
         $this->assertNotNull($user->fresh()->last_login_at);
         $this->assertAuthenticatedAs($user);

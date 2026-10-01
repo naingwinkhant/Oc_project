@@ -9,7 +9,9 @@ const fs = require('node:fs');
 const os = require('node:os');
 const { spawn } = require('node:child_process');
 
-const base = 'http://127.0.0.1:8000';
+// Where the dev server is listening. Overridable so this can be pointed at
+// whatever port the server was started on.
+const base = process.env.SHOP_BASE || 'http://127.0.0.1:8000';
 const out = process.argv[2] || 'C:/Users/User/AppData/Local/Temp/opencode/shots';
 const port = 9345;
 

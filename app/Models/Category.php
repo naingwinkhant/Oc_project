@@ -14,6 +14,17 @@ class Category extends Model
 {
     use HasFactory;
 
+    /**
+     * The marks an administrator can pick from.
+     *
+     * @var array<int, string>
+     */
+    public const ICONS = [
+        'basket', 'apple', 'carrot', 'fish', 'bottle', 'egg', 'wheat',
+        'candy', 'coffee', 'droplet', 'ice-cream', 'meat',
+        'box', 'truck', 'tag', 'store', 'grid',
+    ];
+
     protected $fillable = [
         'parent_id',
         'name',
@@ -33,6 +44,48 @@ class Category extends Model
             'position' => 'integer',
             'depth' => 'integer',
         ];
+    }
+
+    /**
+     * The mark shown beside this classification.
+     *
+     * A stored icon always wins; otherwise one is guessed from the name, so
+     * every classification gets a fitting picture without anyone having to set
+     * it by hand. Every key is a real mark from ICONS — an unknown name would
+     * otherwise render as a blank square.
+     */
+    public function iconName(): string
+    {
+        if ($this->icon) {
+            return $this->icon;
+        }
+
+        $name = Str::lower($this->name);
+
+        // Checked in order, so the most specific words come first.
+        $matches = [
+            'egg' => ['egg'],
+            'apple' => ['fruit', 'apple', 'banana', 'orange', 'mango', 'melon', 'pineapple', 'grape', 'berry', 'citrus'],
+            'carrot' => ['vegetable', 'salad', 'green', 'carrot', 'potato', 'tomato', 'onion', 'lettuce', 'cabbage', 'herb', 'basil', 'coriander', 'spinach', 'pechay'],
+            'fish' => ['seafood', 'fish', 'prawn', 'shrimp', 'squid', 'tuna', 'crab', 'milkfish'],
+            'meat' => ['meat', 'beef', 'pork', 'chicken', 'sausage', 'bacon', 'ham', 'longganisa'],
+            'coffee' => ['coffee', 'tea'],
+            'ice-cream' => ['frozen', 'ice cream'],
+            'bottle' => ['dairy', 'milk', 'cheese', 'yoghurt', 'yogurt', 'butter', 'cream', 'beverage', 'drink', 'juice', 'water', 'soda', 'cola', 'beer', 'wine'],
+            'candy' => ['snack', 'chip', 'chocolate', 'cookie', 'candy', 'nut', 'confection', 'pastry', 'cake', 'croissant'],
+            'wheat' => ['bakery', 'bread', 'rice', 'grain', 'pasta', 'noodle', 'flour', 'pantry', 'canned', 'sauce', 'oil', 'spice', 'honey', 'biscuit', 'bun', 'loaf'],
+            'droplet' => ['cleaning', 'laundry', 'detergent', 'soap', 'bleach', 'tissue', 'paper', 'trash', 'garbage', 'household', 'personal', 'care', 'shampoo', 'lotion', 'kitchenware', 'baby', 'diaper'],
+        ];
+
+        foreach ($matches as $icon => $needles) {
+            foreach ($needles as $needle) {
+                if (Str::contains($name, $needle)) {
+                    return $icon;
+                }
+            }
+        }
+
+        return 'basket';
     }
 
     public function parent(): BelongsTo

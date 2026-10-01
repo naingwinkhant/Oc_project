@@ -1,6 +1,6 @@
 @php
-    $money = fn ($value) => '₱' . number_format((float) $value, 2);
-    $compact = fn ($value) => '₱' . number_format((float) $value, 0);
+    // Amounts come from the app's own money helper, so a department total is
+    // printed in the shop's currency rather than a symbol typed in here.
     $chartFloor = 6;
 @endphp
 
@@ -10,6 +10,15 @@
 
 <x-layouts.app title="Dashboard" heading="Dashboard" description="How the store is doing right now">
     <x-slot:actions>
+        {{-- A registration is refused at every door until it is decided, so it is
+             raised here rather than left for somebody to notice. --}}
+        @if ($waitingAccounts->isNotEmpty())
+            <a href="{{ route('admin.approvals.index') }}" class="btn btn-primary btn-sm">
+                <x-icon name="users" class="size-4" />
+                {{ $waitingAccounts->count() === 1 ? '1 new account' : $waitingAccounts->count().' new accounts' }}
+            </a>
+        @endif
+
         <div data-live-region data-live-interval="60" class="hidden items-center gap-2 sm:flex">
             <span class="relative flex size-2">
                 <span class="absolute inline-flex size-full animate-ping rounded-full bg-brand-400 opacity-75"></span>
@@ -32,6 +41,70 @@
     </x-slot:actions>
 
     <div class="space-y-4">
+
+        {{-- ── 0. Accounts waiting on a decision ───────────────────────────── --}}
+        @if ($waitingAccounts->isNotEmpty())
+            <section class="card overflow-hidden ring-1 ring-inset ring-violet-600/20">
+                <div class="card-header bg-violet-50/60 dark:bg-violet-950/20">
+                    <div class="flex min-w-0 items-center gap-2">
+                        <x-icon name="users" class="size-4 shrink-0 text-violet-600" />
+                        <h2 class="card-title">Accounts waiting to be accepted</h2>
+                    </div>
+                    <a href="{{ route('admin.approvals.index') }}" class="btn btn-primary btn-sm shrink-0">
+                        Open the queue
+                    </a>
+                </div>
+
+                <div class="divide-y divide-ink-100 dark:divide-ink-200">
+                    @foreach ($waitingAccounts as $person)
+                        <div class="flex flex-wrap items-center gap-3 p-3.5">
+                            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">
+                                {{ $person->initials() }}
+                            </span>
+
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-semibold text-ink-900">{{ $person->name }}</p>
+                                <p class="truncate text-xs text-ink-500">
+                                    {{ $person->email }} · registered {{ $person->created_at?->diffForHumans() ?? 'just now' }}
+                                </p>
+                            </div>
+
+                            <div class="flex shrink-0 items-center gap-1.5">
+                                {{-- Each button states its own consequence, because
+                                     accepting opens the account and rejecting
+                                     closes it for good. --}}
+                                <form method="POST" action="{{ route('admin.approvals.accept', $person) }}"
+                                      data-confirm="Accept {{ $person->name }} as staff? They will be able to sign in at the staff door.">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-primary btn-sm"
+                                            title="Accept: {{ $person->name }} becomes staff and can sign in">
+                                        <x-icon name="check" class="size-3.5" /> Accept as staff
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="{{ route('admin.approvals.reject', $person) }}"
+                                      data-confirm="Turn down {{ $person->name }} for good? They will never be able to sign in.">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-secondary btn-sm text-rose-600 hover:bg-rose-50"
+                                            title="Reject: {{ $person->name }} can never sign in">
+                                        <x-icon name="x" class="size-3.5" /> Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <p class="border-t border-ink-100 bg-ink-50 px-4 py-2.5 text-xs leading-relaxed text-ink-600 dark:border-ink-200 dark:bg-ink-100 dark:text-ink-300">
+                    <strong class="font-semibold text-ink-800 dark:text-ink-100">Accept</strong> makes the account a
+                    member of staff, able to sign in and reach goods, stock and orders.
+                    <strong class="font-semibold text-ink-800 dark:text-ink-100">Reject</strong> closes it permanently
+                    &#8212; they can never sign in and that address cannot register again.
+                </p>
+            </section>
+        @endif
 
         {{-- ── 1. One clear answer: shelf health ───────────────────────────── --}}
         <section class="card overflow-hidden">
@@ -330,7 +403,7 @@
                                             <span class="shrink-0 text-[0.6875rem] text-ink-400 tabular-nums">{{ $dept['items'] }} items</span>
                                         </div>
                                         <p class="shrink-0 text-xs font-semibold text-ink-700 tabular-nums">
-                                            {{ $compact($dept['value']) }}
+                                            {{ \App\Support\Money::format($dept['value']) }}
                                             <span class="font-normal text-ink-400">{{ $dept['share'] }}%</span>
                                         </p>
                                     </div>

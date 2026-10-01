@@ -39,6 +39,7 @@ unset($__defined_vars, $__key, $__value); ?>
     $roots = \App\Models\Category::query()->active()->roots()->with(['children' => fn ($q) => $q->active()->orderBy('position')])->get();
     $cartCount = app(\App\Cart\CartService::class)->count();
     $favouriteCount = app(\App\Cart\FavouriteService::class)->count();
+    $notifications = app(\App\Notifications\NotificationService::class);
 
     // Exactly one navigation entry may look selected, so work out which one.
     $activeCategory = request()->routeIs('catalog.show') ? request()->route('category') : null;
@@ -55,13 +56,34 @@ unset($__defined_vars, $__key, $__value); ?>
     <title><?php echo e($title ? $title.' · ' : ''); ?><?php echo e(config('app.name')); ?></title>
     <meta name="description" content="<?php echo e($description ?? config('app.name')); ?>">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    
+    <?php if (isset($component)) { $__componentOriginald165ea9fefcd025b5d835007adfd5466 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald165ea9fefcd025b5d835007adfd5466 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.theme-script','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('theme-script'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald165ea9fefcd025b5d835007adfd5466)): ?>
+<?php $attributes = $__attributesOriginald165ea9fefcd025b5d835007adfd5466; ?>
+<?php unset($__attributesOriginald165ea9fefcd025b5d835007adfd5466); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald165ea9fefcd025b5d835007adfd5466)): ?>
+<?php $component = $__componentOriginald165ea9fefcd025b5d835007adfd5466; ?>
+<?php unset($__componentOriginald165ea9fefcd025b5d835007adfd5466); ?>
+<?php endif; ?>
     <link rel="icon" href="/favicon.ico">
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 </head>
 <body class="min-h-full">
 <div class="flex min-h-full flex-col">
 
-    <header class="sticky top-0 z-40 border-b border-ink-200 bg-white/90 backdrop-blur-md">
+    <header class="sticky top-0 z-40 border-b border-ink-200 bg-surface/90 backdrop-blur-md">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
             <a href="<?php echo e(route('catalog.index')); ?>" class="flex shrink-0 items-center gap-2.5">
                 <span class="grid size-9 place-items-center rounded-lg bg-brand-600 text-white shadow-raise">
@@ -159,7 +181,95 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginal658398a0e73a18931bb7def04d911f42); ?>
 <?php endif; ?>
 
+                
+                <button type="button" class="btn-icon" data-theme-toggle
+                        title="Switch between day and night" aria-label="Switch between day and night">
+                    <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'sparkles','class' => 'size-4.5 dark:hidden']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'sparkles','class' => 'size-4.5 dark:hidden']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                    <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'clock','class' => 'hidden size-4.5 dark:block']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'clock','class' => 'hidden size-4.5 dark:block']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                </button>
+
+                <?php if (isset($component)) { $__componentOriginal658398a0e73a18931bb7def04d911f42 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal658398a0e73a18931bb7def04d911f42 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon-button','data' => ['icon' => 'settings','href' => route('settings'),'label' => 'Settings','active' => request()->routeIs('settings')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['icon' => 'settings','href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('settings')),'label' => 'Settings','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(request()->routeIs('settings'))]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal658398a0e73a18931bb7def04d911f42)): ?>
+<?php $attributes = $__attributesOriginal658398a0e73a18931bb7def04d911f42; ?>
+<?php unset($__attributesOriginal658398a0e73a18931bb7def04d911f42); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal658398a0e73a18931bb7def04d911f42)): ?>
+<?php $component = $__componentOriginal658398a0e73a18931bb7def04d911f42; ?>
+<?php unset($__componentOriginal658398a0e73a18931bb7def04d911f42); ?>
+<?php endif; ?>
+
+                <?php if (isset($component)) { $__componentOriginale5bc9b34dd139a393f71cdc403b71855 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale5bc9b34dd139a393f71cdc403b71855 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.notifications','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('notifications'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale5bc9b34dd139a393f71cdc403b71855)): ?>
+<?php $attributes = $__attributesOriginale5bc9b34dd139a393f71cdc403b71855; ?>
+<?php unset($__attributesOriginale5bc9b34dd139a393f71cdc403b71855); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale5bc9b34dd139a393f71cdc403b71855)): ?>
+<?php $component = $__componentOriginale5bc9b34dd139a393f71cdc403b71855; ?>
+<?php unset($__componentOriginale5bc9b34dd139a393f71cdc403b71855); ?>
+<?php endif; ?>
+
                 <?php if(auth()->guard()->check()): ?>
+                    
                     <a href="<?php echo e(route('admin.dashboard')); ?>" class="btn btn-secondary btn-sm shrink-0 px-2.5 sm:px-3"
                        title="Staff dashboard" aria-label="Staff dashboard">
                         <span class="grid size-5 shrink-0 place-items-center">
@@ -185,32 +295,6 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php endif; ?>
                         </span>
                         <span class="hidden lg:inline">Dashboard</span>
-                    </a>
-                <?php else: ?>
-                    <a href="<?php echo e(route('login')); ?>" class="btn btn-secondary btn-sm shrink-0 px-2.5 sm:px-3">
-                        <span class="grid size-5 shrink-0 place-items-center">
-                            <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'logout','class' => 'size-4.5 rotate-180']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('icon'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['name' => 'logout','class' => 'size-4.5 rotate-180']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
-<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
-<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
-<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
-<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
-<?php endif; ?>
-                        </span>
-                        <span class="hidden sm:inline">Sign in</span>
                     </a>
                 <?php endif; ?>
             </nav>
@@ -240,7 +324,7 @@ unset($__defined_vars, $__key, $__value); ?>
             </button>
         </div>
 
-        <div id="mobile-menu" class="hidden max-h-[70vh] overflow-y-auto border-t border-ink-200 bg-white px-4 py-3 md:hidden">
+        <div id="mobile-menu" class="hidden max-h-[70vh] overflow-y-auto border-t border-ink-200 bg-surface px-4 py-3 md:hidden">
             <p class="section-title mb-2">Classifications</p>
             <ul class="space-y-0.5">
                 <li>
@@ -284,6 +368,26 @@ unset($__defined_vars, $__key, $__value); ?>
                                // marks both a department and its sub-classification.
                                'nav-link-active' => $activeRootSlug === $root->slug && ! $activeChildSlug,
                            ]); ?>">
+                            <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => $root->iconName(),'class' => 'size-4 shrink-0']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($root->iconName()),'class' => 'size-4 shrink-0']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
                             <?php echo e($root->name); ?>
 
                         </a>
@@ -296,6 +400,26 @@ unset($__defined_vars, $__key, $__value); ?>
                                                'nav-link py-2 text-[0.8125rem]',
                                                'nav-link-active' => $activeChildSlug === $child->slug,
                                            ]); ?>">
+                                            <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => $child->iconName(),'class' => 'size-4 shrink-0']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($child->iconName()),'class' => 'size-4 shrink-0']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
                                             <?php echo e($child->name); ?>
 
                                         </a>
@@ -308,7 +432,7 @@ unset($__defined_vars, $__key, $__value); ?>
             </ul>
         </div>
 
-        <nav class="hidden border-t border-ink-200 bg-white md:block">
+        <nav class="hidden border-t border-ink-200 bg-surface md:block">
             <div class="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-1.5 lg:px-8">
                 <a href="<?php echo e(route('catalog.index')); ?>"
                    class="<?php echo \Illuminate\Support\Arr::toCssClasses(['nav-link !py-1.5 whitespace-nowrap', 'nav-link-active' => request()->routeIs('catalog.index')]); ?>">
@@ -378,7 +502,7 @@ unset($__defined_vars, $__key, $__value); ?>
 
     </main>
 
-    <footer class="mt-16 border-t border-ink-200 bg-white">
+    <footer class="mt-16 border-t border-ink-200 bg-surface">
         <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4 lg:px-8">
             <div class="md:col-span-2">
                 <div class="flex items-center gap-2.5">
@@ -422,10 +546,18 @@ unset($__defined_vars, $__key, $__value); ?>
             </div>
 
             <div>
+                <p class="section-title mb-3">Store</p>
+                <ul class="space-y-2 text-sm">
+                    
+                    <li><a href="<?php echo e(route('settings')); ?>" class="text-ink-600 hover:text-brand-700">Settings, services &amp; information</a></li>
+                </ul>
+            </div>
+
+            <div>
                 <p class="section-title mb-3">Team</p>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="<?php echo e(route('admin.dashboard')); ?>" class="text-ink-600 hover:text-brand-700">Staff dashboard</a></li>
-                    <li><a href="<?php echo e(route('login')); ?>" class="text-ink-600 hover:text-brand-700">Sign in</a></li>
+                    
+                    <li><a href="<?php echo e(route('staff.login.php')); ?>" class="text-ink-600 hover:text-brand-700">Staff sign in</a></li>
                 </ul>
             </div>
         </div>

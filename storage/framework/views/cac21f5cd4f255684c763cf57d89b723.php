@@ -1,6 +1,6 @@
 <?php
-    $money = fn ($value) => '₱' . number_format((float) $value, 2);
-    $compact = fn ($value) => '₱' . number_format((float) $value, 0);
+    // Amounts come from the app's own money helper, so a department total is
+    // printed in the shop's currency rather than a symbol typed in here.
     $chartFloor = 6;
 ?>
 
@@ -38,6 +38,34 @@
 <?php endif; ?>
 <?php $component->withAttributes(['title' => 'Dashboard','heading' => 'Dashboard','description' => 'How the store is doing right now']); ?>
      <?php $__env->slot('actions', null, []); ?> 
+        
+        <?php if($waitingAccounts->isNotEmpty()): ?>
+            <a href="<?php echo e(route('admin.approvals.index')); ?>" class="btn btn-primary btn-sm">
+                <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'users','class' => 'size-4']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'users','class' => 'size-4']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                <?php echo e($waitingAccounts->count() === 1 ? '1 new account' : $waitingAccounts->count().' new accounts'); ?>
+
+            </a>
+        <?php endif; ?>
+
         <div data-live-region data-live-interval="60" class="hidden items-center gap-2 sm:flex">
             <span class="relative flex size-2">
                 <span class="absolute inline-flex size-full animate-ping rounded-full bg-brand-400 opacity-75"></span>
@@ -98,6 +126,127 @@
      <?php $__env->endSlot(); ?>
 
     <div class="space-y-4">
+
+        
+        <?php if($waitingAccounts->isNotEmpty()): ?>
+            <section class="card overflow-hidden ring-1 ring-inset ring-violet-600/20">
+                <div class="card-header bg-violet-50/60 dark:bg-violet-950/20">
+                    <div class="flex min-w-0 items-center gap-2">
+                        <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'users','class' => 'size-4 shrink-0 text-violet-600']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'users','class' => 'size-4 shrink-0 text-violet-600']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                        <h2 class="card-title">Accounts waiting to be accepted</h2>
+                    </div>
+                    <a href="<?php echo e(route('admin.approvals.index')); ?>" class="btn btn-primary btn-sm shrink-0">
+                        Open the queue
+                    </a>
+                </div>
+
+                <div class="divide-y divide-ink-100 dark:divide-ink-200">
+                    <?php $__currentLoopData = $waitingAccounts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $person): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <div class="flex flex-wrap items-center gap-3 p-3.5">
+                            <span class="grid size-9 shrink-0 place-items-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">
+                                <?php echo e($person->initials()); ?>
+
+                            </span>
+
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-semibold text-ink-900"><?php echo e($person->name); ?></p>
+                                <p class="truncate text-xs text-ink-500">
+                                    <?php echo e($person->email); ?> · registered <?php echo e($person->created_at?->diffForHumans() ?? 'just now'); ?>
+
+                                </p>
+                            </div>
+
+                            <div class="flex shrink-0 items-center gap-1.5">
+                                
+                                <form method="POST" action="<?php echo e(route('admin.approvals.accept', $person)); ?>"
+                                      data-confirm="Accept <?php echo e($person->name); ?> as staff? They will be able to sign in at the staff door.">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('PATCH'); ?>
+                                    <button type="submit" class="btn btn-primary btn-sm"
+                                            title="Accept: <?php echo e($person->name); ?> becomes staff and can sign in">
+                                        <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'check','class' => 'size-3.5']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'check','class' => 'size-3.5']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?> Accept as staff
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="<?php echo e(route('admin.approvals.reject', $person)); ?>"
+                                      data-confirm="Turn down <?php echo e($person->name); ?> for good? They will never be able to sign in.">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('PATCH'); ?>
+                                    <button type="submit" class="btn btn-secondary btn-sm text-rose-600 hover:bg-rose-50"
+                                            title="Reject: <?php echo e($person->name); ?> can never sign in">
+                                        <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'x','class' => 'size-3.5']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'x','class' => 'size-3.5']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?> Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </div>
+
+                <p class="border-t border-ink-100 bg-ink-50 px-4 py-2.5 text-xs leading-relaxed text-ink-600 dark:border-ink-200 dark:bg-ink-100 dark:text-ink-300">
+                    <strong class="font-semibold text-ink-800 dark:text-ink-100">Accept</strong> makes the account a
+                    member of staff, able to sign in and reach goods, stock and orders.
+                    <strong class="font-semibold text-ink-800 dark:text-ink-100">Reject</strong> closes it permanently
+                    &#8212; they can never sign in and that address cannot register again.
+                </p>
+            </section>
+        <?php endif; ?>
 
         
         <section class="card overflow-hidden">
@@ -587,7 +736,7 @@
                                             <span class="shrink-0 text-[0.6875rem] text-ink-400 tabular-nums"><?php echo e($dept['items']); ?> items</span>
                                         </div>
                                         <p class="shrink-0 text-xs font-semibold text-ink-700 tabular-nums">
-                                            <?php echo e($compact($dept['value'])); ?>
+                                            <?php echo e(\App\Support\Money::format($dept['value'])); ?>
 
                                             <span class="font-normal text-ink-400"><?php echo e($dept['share']); ?>%</span>
                                         </p>

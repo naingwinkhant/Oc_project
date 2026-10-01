@@ -2,6 +2,9 @@
  * Screenshot a single URL at a given width.
  *
  *   node scripts/shot-one.cjs <url> <name> [width] [--click=<selector>]
+ *                             [--theme=dark] [--wait=ms]
+ *
+ * --wait shoots sooner after the page starts, for catching a brief animation.
  */
 
 const fs = require('node:fs');
@@ -10,6 +13,8 @@ const { spawn } = require('node:child_process');
 
 const args = process.argv.slice(2);
 const click = (args.find((a) => a.startsWith('--click=')) || '').replace('--click=', '');
+const theme = (args.find((a) => a.startsWith('--theme=')) || '').replace('--theme=', '');
+const wait = Number((args.find((a) => a.startsWith('--wait=')) || '').replace('--wait=', '') || 0);
 const positional = args.filter((a) => !a.startsWith('--'));
 const url = positional[0];
 const name = positional[1] || 'shot';
@@ -69,7 +74,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await send('Page.enable', {}, S);
   await send('Runtime.enable', {}, S);
   await send('Page.navigate', { url }, S);
-  await sleep(2200);
+  await sleep(wait > 0 ? wait : 2200);
+
+  if (theme) {
+    // Set before the reload so the layout script sees the choice on first paint.
+    await send('Runtime.evaluate', { expression: `localStorage.setItem('ggs.theme', '${theme}')` }, S);
+    await send('Page.navigate', { url }, S);
+    await sleep(wait > 0 ? wait : 2200);
+  }
 
   if (click) {
     await send('Runtime.evaluate', {

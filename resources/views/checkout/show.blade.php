@@ -108,11 +108,15 @@
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-xs font-medium text-ink-800">{{ $item->name }}</p>
                                 <p class="font-mono text-[0.6875rem] text-ink-400">{{ $item->sku }}</p>
+                                {{-- The amount, shown as the arithmetic behind it. --}}
+                                <p class="text-[0.6875rem] text-ink-500 tabular-nums">
+                                    {{ $item->unitPriceFormatted() }} &times; {{ $item->quantity }} {{ $item->unit }}
+                                </p>
                                 @if ($item->product)
                                     <x-freshness :product="$item->product" variant="compact" />
                                 @endif
                             </div>
-                            <span class="shrink-0 text-xs font-semibold text-ink-900 tabular-nums">
+                            <span class="shrink-0 text-sm font-bold text-ink-900 tabular-nums">
                                 {{ $item->lineTotalFormatted() }}
                             </span>
                         </li>

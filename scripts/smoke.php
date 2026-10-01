@@ -104,9 +104,35 @@ function check(string $label, array $res, array $expect = [200], array $mustCont
 $login = req($base.'/login');
 check('GET /login', $login, [200], ['Sign in']);
 
+// The two role-specific doors. Both render, and a staff credential is refused
+// at the admin one.
+$adminDoor = req($base.'/admin/login.php');
+check('GET /admin/login.php', $adminDoor, [200], ['Administrator sign in']);
+
+$staffDoor = req($base.'/staff/login.php');
+check('GET /staff/login.php', $staffDoor, [200], ['Staff sign in']);
+
+$refused = req($base.'/admin/login.php', [
+    '_token' => token($adminDoor['body']),
+    'email' => 'staff@supermarket.test',
+    'password' => 'password',
+]);
+check('POST /admin/login.php (staff refused)', $refused, [200], ['not an administrator']);
+
+check('POST /staff/login.php (staff accepted)', req($base.'/staff/login.php', [
+    '_token' => token($staffDoor['body']),
+    'email' => 'staff@supermarket.test',
+    'password' => 'password',
+]), [200]);
+
+check('GET /admin (as staff)', req($base.'/admin'), [200], ['Dashboard']);
+
+check('POST /logout', req($base.'/logout', ['_token' => token(req($base.'/admin')['body'])]), [200]);
+
+$login = req($base.'/login');
 check('POST /login (admin)', req($base.'/login', [
     '_token' => token($login['body']),
-    'username' => 'admin',
+    'email' => 'admin@supermarket.test',
     'password' => 'password',
 ]), [200]);
 
@@ -328,12 +354,15 @@ if ($write) {
 
 check('POST /logout', req($base.'/logout', ['_token' => token(req($base.'/admin')['body'])]), [200]);
 
-check('GET /admin after logout shows login', req($base.'/admin'), [200], ['Sign in to your account']);
+// /admin opens the admin door, not the generic page.
+check('GET /admin after logout opens the admin door', req($base.'/admin'), [200], ['Administrator sign in']);
+check('GET /staff opens the staff door', req($base.'/staff'), [200], ['Staff sign in']);
+check('GET /admin/products opens the admin door', req($base.'/admin/products'), [200], ['Administrator sign in']);
 
 $login2 = req($base.'/login');
 check('POST /login (staff)', req($base.'/login', [
     '_token' => token($login2['body']),
-    'username' => 'staff',
+    'email' => 'staff@supermarket.test',
     'password' => 'password',
 ]), [200]);
 
@@ -341,6 +370,35 @@ check('staff GET /admin', req($base.'/admin'), [200], ['Dashboard']);
 check('staff GET /admin/stock', req($base.'/admin/stock'), [200], ['Stock movements']);
 check('staff GET /admin/categories (forbidden)', req($base.'/admin/categories'), [403]);
 check('staff GET /admin/users (forbidden)', req($base.'/admin/users'), [403]);
+
+// --- the four roles land on four different pages ---------------------------
+
+// Staff are sent to their own page rather than the administrator's dashboard,
+// so the two are genuinely different places.
+$staff2 = req($base.'/admin/staff', null);
+check('staff GET /admin/staff', $staff2, [200]);
+
+// The customer page and the manager page both refuse the rest of the team.
+$staff3 = req($base.'/admin/manager');
+check('staff GET /admin/manager (forbidden)', $staff3, [403]);
+
+// A manager reaches the manager page and the approval queue, but not users.
+check('POST /logout', req($base.'/logout', ['_token' => token(req($base.'/admin/staff')['body'])]), [200]);
+
+check('POST /staff/login.php (manager)', req($base.'/staff/login.php', [
+    '_token' => token(req($base.'/staff/login.php')['body']),
+    'email' => 'manager@supermarket.test',
+    'password' => 'password',
+]), [200]);
+
+check('manager GET /admin/manager', req($base.'/admin/manager'), [200]);
+check('manager GET /admin/approvals', req($base.'/admin/approvals'), [200], ['New accounts']);
+check('manager GET /admin/users (forbidden)', req($base.'/admin/users'), [403]);
+
+// A customer reaches their own page and nothing in the admin area.
+check('POST /logout', req($base.'/logout', ['_token' => token(req($base.'/admin/manager')['body'])]), [200]);
+
+check('POST /create-account renders', req($base.'/create-account'), [200], ['Create account']);
 
 @unlink($jar);
 

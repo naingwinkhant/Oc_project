@@ -335,7 +335,7 @@ resources/
 routes/web.php
 scripts/           smoke.php, shop-flow.cjs, shot.cjs, shot-one.cjs, lint-views.php,
                    product image tooling
-tests/Feature/     128 feature tests
+tests/Feature/     140 feature tests
 resources/data/    product image manifest (attribution)
 DESIGN.md          Figma-rebuildable design system spec
 ```
@@ -345,7 +345,7 @@ DESIGN.md          Figma-rebuildable design system spec
 ## Testing & tooling
 
 ```bash
-php artisan test                 # 128 feature tests
+php artisan test                 # 140 feature tests
 vendor\bin\pint                  # code style (Laravel preset)
 
 php scripts/lint-views.php       # compiles every Blade view and php -l's the result

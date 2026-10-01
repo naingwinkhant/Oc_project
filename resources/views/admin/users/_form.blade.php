@@ -25,15 +25,25 @@
                 <div class="sm:col-span-2">
                     <x-form-field field="email" label="Email address" type="email" :value="$user->email" required />
                 </div>
-
-                <x-form-field field="password" :label="$isEdit ? 'New password' : 'Password'" type="password"
-                              :required="! $isEdit"
-                              :hint="$isEdit ? 'Leave blank to keep the current password.' : null" />
-
-                <x-form-field field="password_confirmation" :label="$isEdit ? 'Confirm new password' : 'Confirm password'"
-                              type="password" :required="! $isEdit" />
             </div>
         </section>
+
+        @unless ($isEdit)
+            {{-- No password here on purpose: the person sets their own through the
+                 one-time link generated when the account is created. --}}
+            <section class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Their password</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-sm leading-relaxed text-ink-600">
+                        A one-time link is created with the account. Send it to
+                        {{ $user->name ?: 'them' }} and they choose their own password — it is never
+                        typed here, so it cannot end up in a screenshot or a log.
+                    </p>
+                </div>
+            </section>
+        @endunless
 
         <section class="card">
             <div class="card-header">

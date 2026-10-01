@@ -271,10 +271,21 @@ unset($__errorArgs, $__bag); ?>
                             </span>
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-xs font-medium text-ink-800"><?php echo e($item['product']->name); ?></p>
+                                
+                                <p class="text-[0.6875rem] text-ink-500 tabular-nums">
+                                    <?php echo e(\App\Support\Money::format($item['product']->effectivePrice())); ?>
+
+                                    &times; <?php echo e($item['quantity']); ?>
+
+                                    <?php echo e($item['product']->unit); ?>
+
+                                </p>
                                 <?php if($item['product']->hasDiscount()): ?>
                                     <p class="text-[0.6875rem] tabular-nums">
                                         <s class="text-rose-600"><?php echo e(\App\Support\Money::format($item['product']->price)); ?></s>
-                                        <span class="ms-1 text-blue-700"><?php echo e(\App\Support\Money::format($item['product']->effectivePrice())); ?></span>
+                                        <span class="ms-1 font-medium text-blue-700">
+                                            <?php echo e($item['product']->discountPercent()); ?>% off
+                                        </span>
                                     </p>
                                 <?php endif; ?>
                                 <?php if (isset($component)) { $__componentOriginal55a2a145c73971d8b3899d9083ae76a0 = $component; } ?>
@@ -298,7 +309,7 @@ unset($__errorArgs, $__bag); ?>
 <?php unset($__componentOriginal55a2a145c73971d8b3899d9083ae76a0); ?>
 <?php endif; ?>
                             </div>
-                            <span class="shrink-0 text-xs font-semibold text-blue-700 tabular-nums">
+                            <span class="shrink-0 text-sm font-bold text-blue-700 tabular-nums">
                                 <?php echo e(\App\Support\Money::format($item['line_total'])); ?>
 
                             </span>

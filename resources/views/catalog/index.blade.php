@@ -22,55 +22,13 @@
                            class="btn border-0 bg-white text-brand-800 hover:bg-white/90">
                             <x-icon name="tag" class="size-4" /> {{ config('shop.hero.cta') }}
                         </a>
-                        <a href="{{ route('login') }}" class="btn border-0 bg-white/15 text-white backdrop-blur hover:bg-white/25">
+                        <a href="{{ route('staff.login.php') }}" class="btn border-0 bg-white/15 text-white backdrop-blur hover:bg-white/25">
                             <x-icon name="dashboard" class="size-4" /> <span class="hidden sm:inline">Staff sign in</span>
                         </a>
                     </div>
                 </div>
             </div>
         </section>
-
-        <details class="card mb-4 lg:hidden" id="mobile-filters">
-            <summary class="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-ink-900">
-                <x-icon name="sliders" class="size-4 text-ink-500" />
-                Classifications &amp; filters
-                <x-icon name="chevron-down" class="ms-auto size-4 text-ink-400" />
-            </summary>
-            <div class="space-y-3 border-t border-ink-200 p-4">
-                <div class="flex flex-wrap gap-1.5">
-                    <a href="{{ route('catalog.index') }}"
-                       @class([
-                           'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                           'bg-brand-600 text-white' => ! $selectedCategory,
-                           'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory,
-                       ])>All goods</a>
-
-                    @foreach ($categories as $category)
-                        <a href="{{ route('catalog.show', $category) }}"
-                           @class([
-                               'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                               'bg-brand-600 text-white' => $selectedCategory?->id === $category->id,
-                               'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory?->id !== $category->id,
-                           ])>{{ $category->name }}</a>
-                    @endforeach
-                </div>
-
-                <form method="GET" class="flex flex-wrap items-center gap-4 border-t border-ink-100 pt-3">
-                    @if (request('q'))
-                        <input type="hidden" name="q" value="{{ request('q') }}">
-                    @endif
-                    <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
-                        <input type="checkbox" name="in_stock" value="1" @checked(request()->boolean('in_stock')) class="checkbox">
-                        In stock only
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
-                        <input type="checkbox" name="on_sale" value="1" @checked(request()->boolean('on_sale')) class="checkbox">
-                        On promotion
-                    </label>
-                    <button type="submit" class="btn btn-primary btn-sm ms-auto">Apply</button>
-                </form>
-            </div>
-        </details>
 
         <div class="grid gap-6 lg:grid-cols-4">
 
@@ -150,6 +108,66 @@
 
             <div class="lg:col-span-3">
                 <div class="mb-4 flex flex-wrap items-center gap-3">
+                    <x-filter-drawer id="catalog-filters" label="Classifications & filters"
+                                     :active="(int) (bool) $selectedCategory
+                                         + (int) request()->boolean('in_stock')
+                                         + (int) request()->boolean('on_sale')
+                                         + (int) request()->boolean('coming_soon')
+                                         + (int) request()->filled('q')">
+                        <p class="section-title mb-2">Classification</p>
+
+                        <div class="flex flex-wrap gap-1.5">
+                            <a href="{{ route('catalog.index') }}"
+                               @class([
+                                   'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                                   'bg-brand-600 text-white' => ! $selectedCategory,
+                                   'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory,
+                               ])>
+                                <x-icon name="grid" class="size-3.5 shrink-0" /> All goods
+                            </a>
+
+                            @foreach ($categories as $category)
+                                <a href="{{ route('catalog.show', $category) }}"
+                                   @class([
+                                       'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                                       'bg-brand-600 text-white' => $selectedCategory?->id === $category->id,
+                                       'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory?->id !== $category->id,
+                                   ])>
+                                    <x-icon :name="$category->iconName()" class="size-3.5 shrink-0" />
+                                    {{ $category->name }}
+                                </a>
+                            @endforeach
+                        </div>
+
+                        <form method="GET" class="mt-4 space-y-3 border-t border-ink-200 pt-4">
+                            @if (request('q'))
+                                <input type="hidden" name="q" value="{{ request('q') }}">
+                            @endif
+
+                            <p class="section-title">Refine</p>
+
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                                <input type="checkbox" name="in_stock" value="1" @checked(request()->boolean('in_stock')) class="checkbox">
+                                In stock only
+                            </label>
+
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                                <input type="checkbox" name="on_sale" value="1" @checked(request()->boolean('on_sale')) class="checkbox">
+                                On promotion
+                            </label>
+
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                                <input type="checkbox" name="coming_soon" value="1" @checked(request()->boolean('coming_soon')) class="checkbox">
+                                Coming soon
+                            </label>
+
+                            <div class="flex gap-2 pt-1">
+                                <button type="submit" class="btn btn-primary flex-1">Apply filters</button>
+                                <a href="{{ route('catalog.index') }}" class="btn btn-ghost">Clear</a>
+                            </div>
+                        </form>
+                    </x-filter-drawer>
+
                     <p class="text-sm text-ink-600">
                         <span class="font-semibold text-ink-900">{{ number_format($products->total()) }}</span>
                         {{ Str::plural('item', $products->total()) }}

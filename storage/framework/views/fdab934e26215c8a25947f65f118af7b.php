@@ -201,6 +201,7 @@
                                 <th class="text-end">Total</th>
                                 <th>Status</th>
                                 <th class="hidden lg:table-cell text-end">Placed</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -240,6 +241,68 @@
                                     <td class="hidden whitespace-nowrap text-right text-xs text-ink-400 lg:table-cell">
                                         <?php echo e($order->placed_at?->diffForHumans() ?? '—'); ?>
 
+                                    </td>
+                                    <td class="text-end">
+                                        <?php if(auth()->user()?->canManageCatalog()): ?>
+                                            <div class="flex items-center justify-end gap-1">
+                                                
+                                                <?php if($order->status->canTransitionTo(\App\Enums\OrderStatus::Completed)): ?>
+                                                    <form method="POST" action="<?php echo e(route('admin.orders.status', $order)); ?>"
+                                                          data-confirm="Mark <?php echo e($order->order_number); ?> as completed?">
+                                                        <?php echo csrf_field(); ?>
+                                                        <input type="hidden" name="status" value="completed">
+                                                        <button type="submit" class="btn btn-secondary btn-sm" title="Mark completed">
+                                                            <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'check','class' => 'size-3.5']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'check','class' => 'size-3.5']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                                                            <span class="hidden xl:inline">Complete</span>
+                                                        </button>
+                                                    </form>
+                                                <?php endif; ?>
+
+                                                <?php if(! $order->isPaid() && $order->status !== \App\Enums\OrderStatus::Completed): ?>
+                                                    <?php if (isset($component)) { $__componentOriginalec2502b834f860c8e30d229aa8f280e2 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalec2502b834f860c8e30d229aa8f280e2 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.delete-button','data' => ['name' => '','icon' => 'trash','label' => 'Delete '.e($order->order_number).'','action' => route('admin.orders.destroy', $order),'confirm' => 'Delete order '.$order->order_number.'? This cannot be undone.','class' => 'btn-icon text-rose-600 hover:bg-rose-50 hover:text-rose-700']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('delete-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => '','icon' => 'trash','label' => 'Delete '.e($order->order_number).'','action' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('admin.orders.destroy', $order)),'confirm' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute('Delete order '.$order->order_number.'? This cannot be undone.'),'class' => 'btn-icon text-rose-600 hover:bg-rose-50 hover:text-rose-700']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalec2502b834f860c8e30d229aa8f280e2)): ?>
+<?php $attributes = $__attributesOriginalec2502b834f860c8e30d229aa8f280e2; ?>
+<?php unset($__attributesOriginalec2502b834f860c8e30d229aa8f280e2); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalec2502b834f860c8e30d229aa8f280e2)): ?>
+<?php $component = $__componentOriginalec2502b834f860c8e30d229aa8f280e2; ?>
+<?php unset($__componentOriginalec2502b834f860c8e30d229aa8f280e2); ?>
+<?php endif; ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-xs text-ink-400">—</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

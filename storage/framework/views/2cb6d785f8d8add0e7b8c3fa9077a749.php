@@ -72,7 +72,7 @@
 <?php endif; ?> <?php echo e(config('shop.hero.cta')); ?>
 
                         </a>
-                        <a href="<?php echo e(route('login')); ?>" class="btn border-0 bg-white/15 text-white backdrop-blur hover:bg-white/25">
+                        <a href="<?php echo e(route('staff.login.php')); ?>" class="btn border-0 bg-white/15 text-white backdrop-blur hover:bg-white/25">
                             <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'dashboard','class' => 'size-4']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -98,86 +98,6 @@
                 </div>
             </div>
         </section>
-
-        <details class="card mb-4 lg:hidden" id="mobile-filters">
-            <summary class="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-semibold text-ink-900">
-                <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'sliders','class' => 'size-4 text-ink-500']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('icon'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['name' => 'sliders','class' => 'size-4 text-ink-500']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
-<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
-<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
-<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
-<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
-<?php endif; ?>
-                Classifications &amp; filters
-                <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'chevron-down','class' => 'ms-auto size-4 text-ink-400']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('icon'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['name' => 'chevron-down','class' => 'ms-auto size-4 text-ink-400']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
-<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
-<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
-<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
-<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
-<?php endif; ?>
-            </summary>
-            <div class="space-y-3 border-t border-ink-200 p-4">
-                <div class="flex flex-wrap gap-1.5">
-                    <a href="<?php echo e(route('catalog.index')); ?>"
-                       class="<?php echo \Illuminate\Support\Arr::toCssClasses([
-                           'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                           'bg-brand-600 text-white' => ! $selectedCategory,
-                           'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory,
-                       ]); ?>">All goods</a>
-
-                    <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <a href="<?php echo e(route('catalog.show', $category)); ?>"
-                           class="<?php echo \Illuminate\Support\Arr::toCssClasses([
-                               'rounded-full px-3 py-1.5 text-xs font-semibold transition',
-                               'bg-brand-600 text-white' => $selectedCategory?->id === $category->id,
-                               'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory?->id !== $category->id,
-                           ]); ?>"><?php echo e($category->name); ?></a>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </div>
-
-                <form method="GET" class="flex flex-wrap items-center gap-4 border-t border-ink-100 pt-3">
-                    <?php if(request('q')): ?>
-                        <input type="hidden" name="q" value="<?php echo e(request('q')); ?>">
-                    <?php endif; ?>
-                    <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
-                        <input type="checkbox" name="in_stock" value="1" <?php if(request()->boolean('in_stock')): echo 'checked'; endif; ?> class="checkbox">
-                        In stock only
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
-                        <input type="checkbox" name="on_sale" value="1" <?php if(request()->boolean('on_sale')): echo 'checked'; endif; ?> class="checkbox">
-                        On promotion
-                    </label>
-                    <button type="submit" class="btn btn-primary btn-sm ms-auto">Apply</button>
-                </form>
-            </div>
-        </details>
 
         <div class="grid gap-6 lg:grid-cols-4">
 
@@ -314,6 +234,126 @@
 
             <div class="lg:col-span-3">
                 <div class="mb-4 flex flex-wrap items-center gap-3">
+                    <?php if (isset($component)) { $__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.filter-drawer','data' => ['id' => 'catalog-filters','label' => 'Classifications & filters','active' => (int) (bool) $selectedCategory
+                                         + (int) request()->boolean('in_stock')
+                                         + (int) request()->boolean('on_sale')
+                                         + (int) request()->boolean('coming_soon')
+                                         + (int) request()->filled('q')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('filter-drawer'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'catalog-filters','label' => 'Classifications & filters','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute((int) (bool) $selectedCategory
+                                         + (int) request()->boolean('in_stock')
+                                         + (int) request()->boolean('on_sale')
+                                         + (int) request()->boolean('coming_soon')
+                                         + (int) request()->filled('q'))]); ?>
+                        <p class="section-title mb-2">Classification</p>
+
+                        <div class="flex flex-wrap gap-1.5">
+                            <a href="<?php echo e(route('catalog.index')); ?>"
+                               class="<?php echo \Illuminate\Support\Arr::toCssClasses([
+                                   'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                                   'bg-brand-600 text-white' => ! $selectedCategory,
+                                   'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory,
+                               ]); ?>">
+                                <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'grid','class' => 'size-3.5 shrink-0']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'grid','class' => 'size-3.5 shrink-0']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?> All goods
+                            </a>
+
+                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <a href="<?php echo e(route('catalog.show', $category)); ?>"
+                                   class="<?php echo \Illuminate\Support\Arr::toCssClasses([
+                                       'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                                       'bg-brand-600 text-white' => $selectedCategory?->id === $category->id,
+                                       'bg-ink-100 text-ink-700 hover:bg-ink-200' => $selectedCategory?->id !== $category->id,
+                                   ]); ?>">
+                                    <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => $category->iconName(),'class' => 'size-3.5 shrink-0']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($category->iconName()),'class' => 'size-3.5 shrink-0']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                                    <?php echo e($category->name); ?>
+
+                                </a>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+
+                        <form method="GET" class="mt-4 space-y-3 border-t border-ink-200 pt-4">
+                            <?php if(request('q')): ?>
+                                <input type="hidden" name="q" value="<?php echo e(request('q')); ?>">
+                            <?php endif; ?>
+
+                            <p class="section-title">Refine</p>
+
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                                <input type="checkbox" name="in_stock" value="1" <?php if(request()->boolean('in_stock')): echo 'checked'; endif; ?> class="checkbox">
+                                In stock only
+                            </label>
+
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                                <input type="checkbox" name="on_sale" value="1" <?php if(request()->boolean('on_sale')): echo 'checked'; endif; ?> class="checkbox">
+                                On promotion
+                            </label>
+
+                            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                                <input type="checkbox" name="coming_soon" value="1" <?php if(request()->boolean('coming_soon')): echo 'checked'; endif; ?> class="checkbox">
+                                Coming soon
+                            </label>
+
+                            <div class="flex gap-2 pt-1">
+                                <button type="submit" class="btn btn-primary flex-1">Apply filters</button>
+                                <a href="<?php echo e(route('catalog.index')); ?>" class="btn btn-ghost">Clear</a>
+                            </div>
+                        </form>
+                     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1)): ?>
+<?php $attributes = $__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1; ?>
+<?php unset($__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1)): ?>
+<?php $component = $__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1; ?>
+<?php unset($__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1); ?>
+<?php endif; ?>
+
                     <p class="text-sm text-ink-600">
                         <span class="font-semibold text-ink-900"><?php echo e(number_format($products->total())); ?></span>
                         <?php echo e(Str::plural('item', $products->total())); ?>

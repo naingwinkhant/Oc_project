@@ -1,5 +1,14 @@
 @import 'tailwindcss';
 
+/*
+ | Tailwind's stock `dark:` variant follows the operating system. This app lets
+ | a visitor choose night mode on any device, and the script in the head adds
+ | `.dark` to <html> before first paint. Without this line the two disagree: the
+ | ink scale below follows `.dark` while every `dark:` utility followed the OS,
+ | so choosing night on a machine set to day left half the page unpainted.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
@@ -32,6 +41,15 @@
     --color-ink-800: oklch(0.279 0.019 250);
     --color-ink-900: oklch(0.208 0.017 250);
     --color-ink-950: oklch(0.145 0.014 250);
+
+    /*
+     * Surfaces are their own token rather than plain white, so night mode can
+     * darken every card, header and panel by redefining one variable. The ink
+     * scale below is flipped to match: ink-50 becomes the page background and
+     * ink-900 becomes body text, which is what the markup already assumes.
+     */
+    --color-surface: #ffffff;
+    --color-surface-muted: var(--color-ink-50);
 
     --shadow-card: 0 1px 2px 0 rgb(20 30 45 / 0.04), 0 1px 3px 0 rgb(20 30 45 / 0.06);
     --shadow-raise: 0 4px 6px -1px rgb(20 30 45 / 0.07), 0 2px 4px -2px rgb(20 30 45 / 0.05);
@@ -70,6 +88,43 @@
         scrollbar-color: var(--color-ink-300) transparent;
     }
 
+    /*
+     |----------------------------------------------------------------------
+     | Night mode
+     |----------------------------------------------------------------------
+     | Applied by adding .dark to <html>, which the theme script in the layout
+     | does before first paint so there is no white flash.
+     |
+     | The ink scale is inverted rather than restyled one component at a time:
+     | ink-50 becomes the page, ink-100 a card, and ink-900 the body text. Every
+     | utility already in the markup (bg-ink-50, text-ink-900, border-ink-200)
+     | then follows along, so nothing has to be re-declared per view.
+     */
+    .dark {
+        --color-ink-50: oklch(0.168 0.010 250);
+        --color-ink-100: oklch(0.212 0.011 250);
+        --color-ink-200: oklch(0.268 0.012 250);
+        --color-ink-300: oklch(0.33 0.012 250);
+        --color-ink-400: oklch(0.50 0.011 250);
+        --color-ink-500: oklch(0.60 0.010 250);
+        --color-ink-600: oklch(0.70 0.009 250);
+        --color-ink-700: oklch(0.79 0.008 250);
+        --color-ink-800: oklch(0.865 0.007 250);
+        --color-ink-900: oklch(0.93 0.005 250);
+        --color-ink-950: oklch(0.965 0.003 250);
+
+        --color-surface: oklch(0.212 0.011 250);
+        --color-surface-muted: oklch(0.185 0.010 250);
+
+        /* Badges and tints are painted on the -50/-100 steps, which are now
+           dark, so their text needs the matching light end of the scale. */
+        --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 1px 3px 0 rgb(0 0 0 / 0.3);
+        --shadow-raise: 0 4px 6px -1px rgb(0 0 0 / 0.45), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+        --shadow-pop: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+
+        color-scheme: dark;
+    }
+
     *::-webkit-scrollbar {
         width: 10px;
         height: 10px;
@@ -88,7 +143,7 @@
 
 @layer components {
     .card {
-        @apply rounded-card border border-ink-200/80 bg-white shadow-card;
+        @apply rounded-card border border-ink-200/80 bg-surface shadow-card;
     }
 
     .card-header {
@@ -122,7 +177,7 @@
     }
 
     .btn-secondary {
-        @apply border border-ink-300 bg-white text-ink-700 shadow-card hover:bg-ink-50 hover:text-ink-900 active:bg-ink-100;
+        @apply border border-ink-300 bg-surface text-ink-700 shadow-card hover:bg-ink-50 hover:text-ink-900 active:bg-ink-100;
     }
 
     .btn-ghost {
@@ -147,7 +202,7 @@
     }
 
     .input {
-        @apply block w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900
+        @apply block w-full rounded-lg border border-ink-300 bg-surface px-3 py-2 text-sm text-ink-900
                shadow-card transition placeholder:text-ink-400
                focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 focus:outline-none;
     }
@@ -157,7 +212,7 @@
     }
 
     .select {
-        @apply block w-full cursor-pointer appearance-none rounded-lg border border-ink-300 bg-white px-3 py-2
+        @apply block w-full cursor-pointer appearance-none rounded-lg border border-ink-300 bg-surface px-3 py-2
                pr-9 text-sm text-ink-900 shadow-card transition
                focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 focus:outline-none;
         background-position: right 0.6rem center;
@@ -250,6 +305,26 @@
     .scroll-fade {
         mask-image: linear-gradient(to bottom, transparent, black 0.5rem, black calc(100% - 0.5rem), transparent);
     }
+
+    /*
+     |----------------------------------------------------------------------
+     | Night mode corrections
+     |----------------------------------------------------------------------
+     | The brand scale is deliberately left alone, so a pale mint chip on a
+     | dark page would glare. These sit in the components layer because that is
+     | the layer the chips themselves are declared in.
+     */
+    .dark .nav-link-active {
+        @apply bg-brand-500/15 text-brand-100 hover:bg-brand-500/25 hover:text-brand-50;
+    }
+
+    .dark .btn-soft {
+        @apply bg-brand-500/15 text-brand-100 ring-brand-400/20 hover:bg-brand-500/25;
+    }
+
+    .dark .table tbody tr:hover {
+        @apply bg-brand-500/10;
+    }
 }
 
 @layer utilities {
@@ -270,6 +345,34 @@
 
     .grid-cards {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /*
+     |----------------------------------------------------------------------
+     | The loading orbit
+     |----------------------------------------------------------------------
+     | A ring with the dolphin travelling around it. The outer element spins so
+     | the dolphin travels round the circle; the dolphin itself counter-spins, so
+     | it keeps its nose up instead of turning over with the track.
+     */
+    .orbit-track {
+        animation: orbit-track 2.6s linear infinite;
+    }
+
+    .orbit-rider {
+        animation: orbit-rider 2.6s linear infinite;
+    }
+
+    @keyframes orbit-track {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes orbit-rider {
+        to {
+            transform: rotate(-360deg);
+        }
     }
 
     @media (min-width: 640px) {

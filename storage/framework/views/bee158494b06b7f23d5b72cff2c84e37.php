@@ -96,7 +96,7 @@
                         </div>
                         <dl class="grid grid-cols-2 gap-px bg-ink-200 sm:grid-cols-3">
                             <?php $__currentLoopData = $product->attributes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div class="bg-white px-4 py-3">
+                                <div class="bg-surface px-4 py-3">
                                     <dt class="text-[0.6875rem] font-semibold tracking-wider text-ink-400 uppercase">
                                         <?php echo e(str_replace('_', ' ', $key)); ?>
 
@@ -178,12 +178,14 @@
 
                         <div class="mt-4 flex flex-wrap items-start gap-2">
                             <?php if($product->isSellable() && ! $product->isOutOfStock()): ?>
-                                <form method="POST" action="<?php echo e(route('cart.store')); ?>" class="flex flex-1 gap-2">
+                                <form method="POST" action="<?php echo e(route('cart.store')); ?>" class="flex flex-1 gap-2"
+                                      data-add-to-cart="<?php echo e($product->id); ?>">
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="product_id" value="<?php echo e($product->id); ?>">
 
                                     <label class="sr-only" for="qty">Quantity</label>
-                                    <input id="qty" type="number" name="quantity" value="1" min="1" max="99"
+                                    <input id="qty" type="number" name="quantity" value="1" min="1"
+                                           max="<?php echo e(min(99, max(1, (int) $product->stock))); ?>"
                                            class="w-20 rounded-lg border border-ink-300 px-3 py-2.5 text-center text-sm font-semibold tabular-nums focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 focus:outline-none">
 
                                     <button type="submit" class="btn btn-primary btn-lg flex-1">

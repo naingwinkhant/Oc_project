@@ -6,8 +6,8 @@
                 @if ($category->imageUrl())
                     <img src="{{ $category->imageUrl() }}" alt="" class="size-16 shrink-0 rounded-xl object-cover sm:size-20">
                 @else
-                    <span class="grid size-16 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600 sm:size-20">
-                        <x-icon name="tag" class="size-8" />
+                    <span class="grid size-16 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 sm:size-20">
+                        <x-icon name="tag" class="size-8 sm:size-9" />
                     </span>
                 @endif
 
@@ -36,6 +36,58 @@
         </header>
 
         <div class="mb-4 flex flex-wrap items-center gap-3">
+            <x-filter-drawer id="category-filters" label="Filters"
+                             :active="(int) request()->boolean('in_stock')
+                                 + (int) request()->boolean('on_sale')
+                                 + (int) request()->boolean('coming_soon')
+                                 + (int) request()->filled('q')">
+                <form method="GET" class="space-y-3">
+                    @if (request('q'))
+                        <input type="hidden" name="q" value="{{ request('q') }}">
+                    @endif
+
+                    <p class="section-title">Refine</p>
+
+                    <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                        <input type="checkbox" name="in_stock" value="1" @checked(request()->boolean('in_stock')) class="checkbox">
+                        In stock only
+                    </label>
+
+                    <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                        <input type="checkbox" name="on_sale" value="1" @checked(request()->boolean('on_sale')) class="checkbox">
+                        On promotion
+                    </label>
+
+                    <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                        <input type="checkbox" name="coming_soon" value="1" @checked(request()->boolean('coming_soon')) class="checkbox">
+                        Coming soon
+                    </label>
+
+                    <div class="flex gap-2 pt-1">
+                        <button type="submit" class="btn btn-primary flex-1">Apply filters</button>
+                        <a href="{{ route('catalog.show', $category) }}" class="btn btn-ghost">Clear</a>
+                    </div>
+                </form>
+
+                @if ($children->isNotEmpty())
+                    <p class="section-title mt-5 mb-2">Aisles</p>
+
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach ($children as $child)
+                            <a href="{{ route('catalog.show', $child) }}"
+                               @class([
+                                   'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition',
+                                   'bg-brand-600 text-white' => $child->id === $category->id,
+                                   'bg-ink-100 text-ink-700 hover:bg-ink-200' => $child->id !== $category->id,
+                               ])>
+                                <x-icon :name="$child->iconName()" class="size-3.5 shrink-0" />
+                                {{ $child->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+            </x-filter-drawer>
+
             <p class="text-sm text-ink-600">
                 <span class="font-semibold text-ink-900">{{ number_format($products->total()) }}</span>
                 {{ Str::plural('item', $products->total()) }}
@@ -56,13 +108,6 @@
                         <option value="{{ $value }}" @selected(request('sort', 'name') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-            </form>
-
-            <form method="GET" class="flex items-center gap-2">
-                <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-600">
-                    <input type="checkbox" name="in_stock" value="1" @checked(request()->boolean('in_stock')) data-autosubmit class="checkbox">
-                    In stock
-                </label>
             </form>
         </div>
 

@@ -1,27 +1,16 @@
 <x-layouts.guest title="Create account" eyebrow="Join the team">
-    <h2 class="mb-1 text-lg font-bold tracking-tight text-ink-900">Create a staff account</h2>
-    <p class="mb-6 text-sm text-ink-500">
-        New accounts start with the Staff role. An administrator can promote you later.
+    <p class="mb-6 text-sm leading-relaxed text-ink-500">
+        For an administrator, manager or member of staff who does not have an
+        account yet. A new account waits to be accepted before anyone can sign in
+        with it.
     </p>
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+    <form method="POST" action="{{ route('register.store') }}" class="space-y-4">
         @csrf
 
         <div>
-            <label for="username" class="label">Username <span class="text-rose-500">*</span></label>
-            <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus
-                   autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="jennac"
-                   class="input @if ($errors->has('username')) input-error @endif">
-            @error('username')
-                <p class="help-error"><x-icon name="alert" class="size-3.5 shrink-0" /> {{ $message }}</p>
-            @else
-                <p class="mt-1.5 text-xs text-ink-400">Letters, numbers, dots, dashes and underscores. 3–40 characters.</p>
-            @enderror
-        </div>
-
-        <div>
-            <label for="name" class="label">Full name <span class="text-rose-500">*</span></label>
-            <input id="name" name="name" type="text" value="{{ old('name') }}" required
+            <label for="name" class="label">Name <span class="text-rose-500">*</span></label>
+            <input id="name" name="name" type="text" value="{{ old('name') }}" required maxlength="120" autofocus
                    autocomplete="name" placeholder="Jenna Cruz"
                    class="input @if ($errors->has('name')) input-error @endif">
             @error('name')
@@ -30,38 +19,32 @@
         </div>
 
         <div>
-            <label for="email" class="label">Email address <span class="text-rose-500">*</span></label>
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required
-                   autocomplete="email" placeholder="jenna@supermarket.test"
+            <label for="email" class="label">Email <span class="text-rose-500">*</span></label>
+            <input id="email" name="email" type="email" value="{{ old('email') }}" required maxlength="190"
+                   autocomplete="email" placeholder="jenna@goldengate.com.mm"
                    class="input @if ($errors->has('email')) input-error @endif">
+            <p class="mt-1.5 text-xs text-ink-400">This is what you sign in with.</p>
             @error('email')
                 <p class="help-error"><x-icon name="alert" class="size-3.5 shrink-0" /> {{ $message }}</p>
             @enderror
         </div>
 
         <div>
-            <label for="phone" class="label">Mobile number <span class="font-normal text-ink-400">(optional)</span></label>
-            <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" autocomplete="tel"
-                   placeholder="09 380 000 00" class="input @if ($errors->has('phone')) input-error @endif">
-            @error('phone')
+            <label for="password" class="label">Password <span class="text-rose-500">*</span></label>
+            <input id="password" name="password" type="password" required minlength="8"
+                   autocomplete="new-password" placeholder="••••••••"
+                   class="input @if ($errors->has('password')) input-error @endif">
+            <p class="mt-1.5 text-xs text-ink-400">At least 8 characters.</p>
+            @error('password')
                 <p class="help-error"><x-icon name="alert" class="size-3.5 shrink-0" /> {{ $message }}</p>
             @enderror
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-                <label for="password" class="label">Password <span class="text-rose-500">*</span></label>
-                <input id="password" name="password" type="password" required autocomplete="new-password"
-                       class="input @if ($errors->has('password')) input-error @endif">
-                @error('password')
-                    <p class="help-error"><x-icon name="alert" class="size-3.5 shrink-0" /> {{ $message }}</p>
-                @enderror
-            </div>
-            <div>
-                <label for="password_confirmation" class="label">Confirm password <span class="text-rose-500">*</span></label>
-                <input id="password_confirmation" name="password_confirmation" type="password" required
-                       autocomplete="new-password" class="input">
-            </div>
+        <div>
+            <label for="password_confirmation" class="label">Confirm password <span class="text-rose-500">*</span></label>
+            <input id="password_confirmation" name="password_confirmation" type="password" required
+                   minlength="8" autocomplete="new-password" placeholder="••••••••"
+                   class="input @if ($errors->has('password')) input-error @endif">
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg w-full">
@@ -71,7 +54,6 @@
     </form>
 
     <p class="mt-5 text-center text-sm text-ink-500">
-        Already registered?
-        <a href="{{ route('login') }}" class="link">Sign in instead</a>
+        Already have one? <a href="{{ route('staff.login.php') }}" class="link">Sign in</a>
     </p>
 </x-layouts.guest>

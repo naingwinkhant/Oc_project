@@ -139,6 +139,6 @@ class DashboardTest extends TestCase
 
     public function test_guests_cannot_reach_the_dashboard(): void
     {
-        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
+        $this->get(route('admin.dashboard'))->assertRedirect(route('admin.login.php'));
     }
 }

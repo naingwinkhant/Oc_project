@@ -46,6 +46,53 @@
         </section>
 
         <div class="mb-4 flex flex-wrap items-center gap-3">
+            <?php if (isset($component)) { $__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.filter-drawer','data' => ['id' => 'arrivals-filters','label' => 'Filters','active' => (int) request()->boolean('in_stock')
+                                 + (int) request()->boolean('on_sale')
+                                 + (int) request()->filled('q')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('filter-drawer'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'arrivals-filters','label' => 'Filters','active' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute((int) request()->boolean('in_stock')
+                                 + (int) request()->boolean('on_sale')
+                                 + (int) request()->filled('q'))]); ?>
+                <form method="GET" class="space-y-3">
+                    <?php if(request('q')): ?>
+                        <input type="hidden" name="q" value="<?php echo e(request('q')); ?>">
+                    <?php endif; ?>
+
+                    <p class="section-title">Refine</p>
+
+                    <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                        <input type="checkbox" name="in_stock" value="1" <?php if(request()->boolean('in_stock')): echo 'checked'; endif; ?> class="checkbox">
+                        In stock only
+                    </label>
+
+                    <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                        <input type="checkbox" name="on_sale" value="1" <?php if(request()->boolean('on_sale')): echo 'checked'; endif; ?> class="checkbox">
+                        On promotion
+                    </label>
+
+                    <div class="flex gap-2 pt-1">
+                        <button type="submit" class="btn btn-primary flex-1">Apply filters</button>
+                        <a href="<?php echo e(route('catalog.new-arrivals')); ?>" class="btn btn-ghost">Clear</a>
+                    </div>
+                </form>
+             <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1)): ?>
+<?php $attributes = $__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1; ?>
+<?php unset($__attributesOriginal16e01e9a6d64ca6093093e67d42c7fb1); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1)): ?>
+<?php $component = $__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1; ?>
+<?php unset($__componentOriginal16e01e9a6d64ca6093093e67d42c7fb1); ?>
+<?php endif; ?>
+
             <p class="text-sm text-ink-600">
                 Sorted by <span class="font-semibold text-ink-900">newest first</span>
             </p>
@@ -62,13 +109,6 @@
                         <option value="<?php echo e($value); ?>" <?php if(request('sort', 'newest') === $value): echo 'selected'; endif; ?>><?php echo e($label); ?></option>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </select>
-            </form>
-
-            <form method="GET">
-                <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-600">
-                    <input type="checkbox" name="in_stock" value="1" <?php if(request()->boolean('in_stock')): echo 'checked'; endif; ?> data-autosubmit class="checkbox">
-                    In stock
-                </label>
             </form>
         </div>
 

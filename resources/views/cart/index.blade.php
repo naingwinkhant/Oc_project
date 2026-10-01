@@ -102,14 +102,16 @@
                                             @method('PATCH')
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
 
+                                            @php $maxQuantity = min(99, max(1, (int) $product->stock)); @endphp
+
                                             <label class="sr-only" for="qty-{{ $product->id }}">Quantity</label>
-                                            <div class="flex items-center rounded-lg border border-ink-300 bg-white">
+                                            <div class="flex items-center rounded-lg border border-ink-300 bg-surface">
                                                 <button type="button" class="grid size-8 place-items-center rounded-l-lg text-ink-500 transition hover:bg-ink-100"
                                                         data-step="-1" data-target="qty-{{ $product->id }}" aria-label="Decrease quantity">
                                                     <x-icon name="minus" class="size-3.5" />
                                                 </button>
                                                 <input id="qty-{{ $product->id }}" type="number" name="quantity"
-                                                       value="{{ $item['quantity'] }}" min="0" max="99"
+                                                       value="{{ $item['quantity'] }}" min="0" max="{{ $maxQuantity }}"
                                                        class="w-12 border-x border-ink-200 py-1.5 text-center text-sm font-semibold tabular-nums focus:outline-none">
                                                 <button type="button" class="grid size-8 place-items-center rounded-r-lg text-ink-500 transition hover:bg-ink-100"
                                                         data-step="1" data-target="qty-{{ $product->id }}" aria-label="Increase quantity">
@@ -145,11 +147,59 @@
                         <h2 class="card-title">Order summary</h2>
                     </div>
                     <div class="card-body space-y-3">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-ink-600">Subtotal</span>
-                            <span class="font-semibold text-ink-900 tabular-nums">{{ $summary['subtotal_formatted'] }}</span>
+                        {{-- The amount for every line: price x amount. --}}
+                        <ul class="divide-y divide-ink-100 border-b border-ink-100 pb-1">
+                            @foreach ($items as $item)
+                                @php $line = $item['product']; @endphp
+                                <li class="flex items-baseline justify-between gap-3 py-1.5 text-xs">
+                                    <span class="min-w-0 flex-1 truncate text-ink-700">
+                                        {{ $line->name }}
+                                        <span class="text-ink-400">
+                                            &times; {{ $item['quantity'] }} {{ $line->unit }}
+                                        </span>
+                                    </span>
+                                    <span class="shrink-0 text-right tabular-nums">
+                                        <span class="block font-semibold text-ink-900">
+                                            {{ \App\Support\Money::format($item['line_total']) }}
+                                        </span>
+                                        <span class="block text-[0.625rem] text-ink-400">
+                                            {{ \App\Support\Money::format($line->effectivePrice()) }} each
+                                        </span>
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        <div class="flex items-baseline justify-between gap-3 text-sm">
+                            <span class="text-ink-600">
+                                Goods subtotal
+                                <span class="block text-[0.6875rem] text-ink-400">
+                                    sum of each item's price &times; its amount
+                                </span>
+                            </span>
+                            <span class="text-end font-semibold text-ink-900 tabular-nums">
+                                {{ $summary['subtotal_formatted'] }}
+                                <span class="block text-[0.6875rem] font-normal text-ink-400">
+                                    {{ $summary['count'] }} {{ Str::plural('unit', $summary['count']) }}
+                                </span>
+                            </span>
                         </div>
-                        <div class="flex items-center justify-between text-sm">
+
+                        @if ($summary['savings'] > 0)
+                            <div class="flex items-baseline justify-between gap-3 text-sm">
+                                <span class="text-ink-600">
+                                    Promotions
+                                    <span class="block text-[0.6875rem] text-ink-400">
+                                        was {{ $summary['undiscounted_formatted'] }}
+                                    </span>
+                                </span>
+                                <span class="text-end font-semibold text-emerald-700 tabular-nums">
+                                    &minus;{{ $summary['savings_formatted'] }}
+                                </span>
+                            </div>
+                        @endif
+
+                        <div class="flex items-baseline justify-between gap-3 text-sm">
                             <span class="text-ink-600">Delivery</span>
                             @if ($isFreeDelivery)
                                 <span class="badge bg-emerald-50 text-emerald-700 ring-emerald-600/20">Free</span>
@@ -163,13 +213,15 @@
                             @endif
                         </div>
 
-                        <div class="flex items-center justify-between border-t border-ink-200 pt-3">
+                        <div class="flex items-baseline justify-between gap-3 border-t border-ink-200 pt-3">
                             <span class="text-sm font-semibold text-ink-900">Total</span>
-                            <span class="text-lg font-bold text-blue-700 tabular-nums">
+                            <span class="text-end text-lg font-bold text-blue-700 tabular-nums">
                                 {{ \App\Support\Money::format($summary['subtotal'] + ($isFreeDelivery ? 0 : $summary['delivery_range']['min'])) }}
+                                <span class="block text-[0.6875rem] font-normal text-ink-400">
+                                    plus delivery for your township
+                                </span>
                             </span>
                         </div>
-
                         @unless ($isFreeDelivery)
                             <p class="rounded-lg bg-brand-50 p-2.5 text-xs text-brand-800">
                                 Add <strong class="font-semibold">{{ \App\Support\Money::format($amountUntilFree) }}</strong>

@@ -141,11 +141,15 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php endif; ?>
 
             <?php if($product->isSellable()): ?>
-                <form method="POST" action="<?php echo e(route('cart.store')); ?>" class="shrink-0">
+                <form method="POST" action="<?php echo e(route('cart.store')); ?>" class="shrink-0" data-add-to-cart="<?php echo e($product->id); ?>">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="product_id" value="<?php echo e($product->id); ?>">
                     <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="btn btn-soft btn-sm" title="Add <?php echo e($product->name); ?> to cart">
+                    <button type="submit" class="btn btn-soft btn-sm"
+                            title="Add <?php echo e($product->name); ?> to cart"
+                            <?php if($product->stock < 10): ?>
+                                aria-label="Add <?php echo e($product->name); ?> to cart, <?php echo e($product->stock); ?> left"
+                            <?php endif; ?>>
                         <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'cart','class' => 'size-3.5']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -166,7 +170,11 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
 <?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
 <?php endif; ?>
-                        <span class="sr-only">Add to cart</span>
+                        <?php if($product->stock < 10): ?>
+                            <span class="text-[0.625rem] font-bold tabular-nums"><?php echo e($product->stock); ?></span>
+                        <?php else: ?>
+                            <span class="sr-only">Add to cart</span>
+                        <?php endif; ?>
                     </button>
                 </form>
             <?php endif; ?>

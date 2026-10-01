@@ -12,6 +12,40 @@ return [
     'tagline' => env('SHOP_TAGLINE', 'Fresh goods, fairly priced, every day.'),
     'phone' => env('SHOP_PHONE', '09 380 000 00'),
     'address' => env('SHOP_ADDRESS', 'No. 12, Baho Road, Kamayut, Yangon'),
+    'email' => env('SHOP_EMAIL', 'orders@goldengate.com.mm'),
+    'founded' => env('SHOP_FOUNDED', '1994'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Store information
+    |--------------------------------------------------------------------------
+    | The customer-facing "Information" page reads from here, so the opening
+    | hours and contact details are changed in one place.
+    */
+
+    'info' => [
+
+        'hours' => [
+            ['label' => 'Monday to Friday', 'value' => '7:00 am – 9:00 pm'],
+            ['label' => 'Saturday', 'value' => '7:00 am – 9:30 pm'],
+            ['label' => 'Sunday', 'value' => '8:00 am – 8:00 pm'],
+            ['label' => 'Public holidays', 'value' => '9:00 am – 6:00 pm'],
+        ],
+
+        'about' => [
+            'Golden Gate has been filling baskets on Baho Road since 1994. What began as a single counter of rice and oil is now a full supermarket, but the promise has not changed: sell what is fresh, price it fairly, and tell the truth about the date on it.',
+            'Everything on this site is the shelf as it stands. Stock is counted as it moves, promotions are the price you actually pay, and a batch is withdrawn the day after it expires rather than being quietly discounted.',
+        ],
+
+        'payment_note' => 'Cash, or any of the mobile wallets below. You are only charged once the payment is confirmed.',
+
+        'branches' => [
+            ['name' => 'Baho Road', 'address' => 'No. 12, Baho Road, Kamayut, Yangon', 'phone' => '09 380 000 00'],
+            ['name' => 'Hlaing', 'address' => 'No. 4, Myin Gone Street, Hlaing, Yangon', 'phone' => '09 380 000 01'],
+            ['name' => 'Mandalay', 'address' => 'No. 78, 78th Street, Chan Aye Thar Zan, Mandalay', 'phone' => '09 380 000 02'],
+        ],
+
+    ],
 
     /*
     |--------------------------------------------------------------------------

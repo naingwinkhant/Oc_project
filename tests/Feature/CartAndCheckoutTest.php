@@ -82,6 +82,100 @@ class CartAndCheckoutTest extends TestCase
         $this->assertSame(0, app(CartService::class)->count());
     }
 
+    public function test_each_line_amount_is_the_price_times_the_quantity(): void
+    {
+        $plain = $this->sellable(['name' => 'Rice 5kg', 'price' => 4500]);
+        $promoted = $this->sellable(['name' => 'Chicken 1kg', 'price' => 6500, 'sale_price' => 5200]);
+
+        $this->addToCart($plain, 3);
+        $this->addToCart($promoted, 2);
+
+        $cart = app(CartService::class);
+
+        $lines = $cart->items()->keyBy(fn ($item) => $item['product']->name);
+
+        // 4,500 x 3
+        $this->assertSame(13500, $lines['Rice 5kg']['line_total']);
+        // The sale price is what is charged, not the list price: 5,200 x 2
+        $this->assertSame(10400, $lines['Chicken 1kg']['line_total']);
+
+        $this->assertSame(23900, $cart->subtotal());
+        $this->assertSame(5, $cart->count());
+    }
+
+    public function test_the_order_summary_shows_the_calculation_and_the_saving(): void
+    {
+        // The factory randomises the unit, so pin it for the summary line.
+        $promoted = $this->sellable(['name' => 'Beef Ribeye', 'unit' => 'kg', 'price' => 9000, 'sale_price' => 7000]);
+
+        $this->addToCart($promoted, 2);
+
+        $summary = app(CartService::class)->summary();
+
+        // 7,000 x 2 = 14,000, against 9,000 x 2 = 18,000 on the shelf price.
+        $this->assertSame(14000, $summary['subtotal']);
+        $this->assertSame(4000, $summary['savings']);
+        $this->assertSame(18000, $summary['undiscounted']);
+        $this->assertSame(14000 + $summary['delivery'], $summary['total']);
+
+        $this->get(route('cart.index'))
+            ->assertOk()
+            ->assertSee('Goods subtotal')
+            ->assertSee('sum of each item')
+            ->assertSee('Beef Ribeye')
+            // The summary line shows the amount and the arithmetic behind it.
+            ->assertSee('&times; 2 kg', escape: false)
+            ->assertSee('7,000 Ks each')
+            ->assertSee(Money::format(14000))
+            ->assertSee('Promotions')
+            ->assertSee('was '.Money::format(18000))
+            ->assertSee(Money::format(4000));
+    }
+
+    public function test_no_saving_is_shown_when_nothing_is_on_promotion(): void
+    {
+        $this->addToCart($this->sellable(['price' => 2000]), 2);
+
+        $this->assertSame(0, app(CartService::class)->savings());
+
+        $this->get(route('cart.index'))
+            ->assertOk()
+            ->assertSee('Goods subtotal')
+            ->assertDontSee('Promotions');
+    }
+
+    public function test_the_saved_order_stores_price_times_quantity_per_line(): void
+    {
+        // The factory randomises the unit, so pin it for the receipt text.
+        $promoted = $this->sellable(['name' => 'Prawns 500g', 'unit' => 'kg', 'price' => 8000, 'sale_price' => 6500]);
+
+        $this->addToCart($promoted, 3);
+
+        $this->post(route('checkout.store'), [
+            'customer_name' => 'Aung Kyaw',
+            'phone' => '09 380 000 00',
+            'email' => 'aung@example.com',
+            'delivery_address' => 'No. 12, Baho Road, Kamayut',
+            'township' => 'Kamayut',
+            'payment_gateway' => PaymentGateway::Cash->value,
+        ])->assertRedirect();
+
+        $order = Order::query()->firstOrFail();
+        $item = $order->items->first();
+
+        // The snapshot is the price actually charged, and the line adds up.
+        $this->assertSame(6500, $item->unit_price);
+        $this->assertSame(3, $item->quantity);
+        $this->assertSame($item->unit_price * $item->quantity, $item->line_total);
+        $this->assertSame($item->line_total, $order->subtotal);
+        $this->assertSame($order->subtotal + $order->delivery_fee, $order->total);
+
+        $this->get(route('checkout.show', $order))
+            ->assertOk()
+            ->assertSee('6,500 Ks &times; 3 kg', escape: false)
+            ->assertSee('19,500 Ks');
+    }
+
     public function test_out_of_stock_items_cannot_be_added(): void
     {
         $empty = $this->sellable(['stock' => 0]);
@@ -90,22 +184,123 @@ class CartAndCheckoutTest extends TestCase
             ->assertSessionHas('error');
     }
 
+    public function test_a_customer_cannot_buy_more_than_the_stock_on_hand(): void
+    {
+        // 54 on the shelf, so 54 is the most anyone may take.
+        $product = $this->sellable(['stock' => 54, 'unit' => 'pc']);
+
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 54])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(54, app(CartService::class)->count());
+
+        // There is nothing left to add, so the cart refuses rather than going to 58.
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1])
+            ->assertSessionHas('error');
+
+        $this->assertSame(54, app(CartService::class)->count());
+    }
+
+    public function test_a_single_request_cannot_ask_for_more_than_the_line_ceiling(): void
+    {
+        $product = $this->sellable(['stock' => 500]);
+
+        // Guard rail above the stock rule, so one post cannot flood the cart.
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 100])
+            ->assertSessionHasErrors('quantity');
+
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 99])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(99, app(CartService::class)->count());
+    }
+
+    public function test_the_last_unit_cannot_be_added_twice(): void
+    {
+        $product = $this->sellable(['stock' => 1]);
+
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1]);
+
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1])
+            ->assertSessionHas('error');
+
+        $this->assertSame(1, app(CartService::class)->count());
+    }
+
+    public function test_updating_a_line_cannot_exceed_the_stock_on_hand(): void
+    {
+        $product = $this->sellable(['stock' => 3]);
+
+        $this->addToCart($product);
+
+        $this->patch(route('cart.update'), ['product_id' => $product->id, 'quantity' => 10])
+            ->assertSessionHas('status');
+
+        $this->assertSame(3, app(CartService::class)->count());
+    }
+
+    public function test_a_line_that_outgrows_its_stock_blocks_checkout(): void
+    {
+        // The factory randomises the unit, so pin it for the message below.
+        $product = $this->sellable(['stock' => 10, 'unit' => 'kg']);
+
+        $this->addToCart($product, 4);
+
+        // Another shopper clears the shelf while this cart is open.
+        $product->forceFill(['stock' => 2])->save();
+
+        $this->get(route('cart.index'))
+            ->assertOk()
+            ->assertSee('Only 2 kg left');
+
+        $this->get(route('checkout.create'))->assertRedirect(route('cart.index'));
+
+        $this->post(route('checkout.store'), [
+            'customer_name' => 'Aung Kyaw',
+            'phone' => '09 380 000 00',
+            'email' => 'aung@example.com',
+            'delivery_address' => 'No. 12, Baho Road, Kamayut',
+            'township' => 'Kamayut',
+            'payment_gateway' => PaymentGateway::Cash->value,
+        ])->assertRedirect(route('cart.index'));
+
+        $this->assertSame(0, Order::query()->count());
+    }
+
+    public function test_the_quantity_inputs_never_offer_more_than_the_stock(): void
+    {
+        $product = $this->sellable(['stock' => 6]);
+
+        $this->get(route('catalog.product', $product))
+            ->assertOk()
+            ->assertSee('max="6"', escape: false);
+
+        $this->addToCart($product);
+
+        $this->get(route('cart.index'))
+            ->assertOk()
+            ->assertSee('max="6"', escape: false);
+    }
+
     public function test_an_expired_item_is_not_offered_for_purchase(): void
     {
         $expired = $this->sellable(['produced_at' => now()->subMonths(2), 'expires_at' => now()->subDay()]);
+        $buyable = $this->sellable();
 
         $this->assertFalse($expired->isSellable());
 
+        // Scoped to this item's own buy form: other cards on the page may well be
+        // for sale, and that is the point of the page.
         $this->get(route('catalog.index'))
             ->assertOk()
             ->assertSee('Expired')
-            // No add-to-cart form anywhere on the card.
-            ->assertDontSee('action="'.route('cart.store').'"', escape: false);
+            ->assertSee('data-add-to-cart="'.$buyable->id.'"', escape: false)
+            ->assertDontSee('data-add-to-cart="'.$expired->id.'"', escape: false);
 
         $this->get(route('catalog.product', $expired))
             ->assertOk()
             ->assertSee('is no longer for sale')
-            ->assertDontSee('action="'.route('cart.store').'"', escape: false);
+            ->assertDontSee('data-add-to-cart="'.$expired->id.'"', escape: false);
     }
 
     public function test_an_item_that_expires_in_the_cart_blocks_checkout(): void
@@ -169,16 +364,18 @@ class CartAndCheckoutTest extends TestCase
             ->assertSee('Mangoes (Carabao)')
             ->assertSee('Coming soon');
 
+        // Scoped to this item's own buy form: the "you might also like" cards
+        // below it have their own, which is correct.
         $this->get(route('catalog.product', $soon))
             ->assertOk()
             ->assertSee('still on its way')
-            ->assertDontSee('action="'.route('cart.store').'"', escape: false);
+            ->assertDontSee('data-add-to-cart="'.$soon->id.'"', escape: false);
 
         // A batch that lands today is on sale straight away.
         $this->assertFalse($today->isComingSoon());
         $this->get(route('catalog.product', $today))
             ->assertOk()
-            ->assertSee('action="'.route('cart.store').'"', escape: false);
+            ->assertSee('data-add-to-cart="'.$today->id.'"', escape: false);
     }
 
     public function test_a_batch_that_lands_while_it_sits_in_the_cart_blocks_checkout(): void

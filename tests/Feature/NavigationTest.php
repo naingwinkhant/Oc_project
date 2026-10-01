@@ -63,8 +63,11 @@ class NavigationTest extends TestCase
             route('cart.index'),
             route('checkout.create'),
             route('favourites.index'),
+            route('history.index'),
+            route('settings'),
+            route('services'),
+            route('information'),
             route('login'),
-            route('register'),
         ];
 
         $this->assertNoBreadcrumbs($beforeTheOrder);
@@ -100,7 +103,12 @@ class NavigationTest extends TestCase
                 $response->getContent(),
                 $url.' should not render a breadcrumb'
             );
-            $this->assertStringNotContainsString('data-back', $response->getContent(), $url.' has no back arrow');
+
+            // Settings is the one storefront page with a back button, because it
+            // is reached from the header rather than from a list.
+            if (! str_contains($url, '/settings')) {
+                $this->assertStringNotContainsString('data-back', $response->getContent(), $url.' has no back arrow');
+            }
         }
     }
 

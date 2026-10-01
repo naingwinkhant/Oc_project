@@ -5,7 +5,7 @@
     ]" />
 @endsection
 
-<x-layouts.app title="Users" heading="Users &amp; roles" description="Who can access the inventory system">
+<x-layouts.app title="Users" heading="Users & roles" description="Who can access the inventory system">
     <x-slot:actions>
         <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm">
             <x-icon name="plus" class="size-4" />
@@ -100,9 +100,49 @@
                                             'bg-emerald-50 text-emerald-700 ring-emerald-600/20' => $user->is_active,
                                             'bg-ink-100 text-ink-500 ring-ink-500/10' => ! $user->is_active,
                                         ])>{{ $user->is_active ? 'Active' : 'Disabled' }}</span>
+
+                                        @unless ($user->hasPassword())
+                                            <span class="badge mt-1 block w-fit bg-amber-50 text-amber-700 ring-amber-600/20"
+                                                  title="This person has not chosen a password yet, so cannot sign in.">
+                                                No password yet
+                                            </span>
+                                        @endunless
+
+                                        @if ($user->isPending())
+                                            <span class="badge mt-1 block w-fit bg-violet-50 text-violet-700 ring-violet-600/20"
+                                                  title="Waiting for an administrator or manager to accept this account.">
+                                                Waiting to be accepted
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="text-end">
                                         <div class="flex items-center justify-end gap-0.5">
+                                            {{-- Accepting is what lets the account sign in, so it is
+                                                 offered whenever that is the outstanding step. --}}
+                                            @if (auth()->user()?->canManageCatalog())
+                                                @if ($user->isPending())
+                                                    <form method="POST" action="{{ route('admin.users.approve', $user) }}" class="inline"
+                                                          data-confirm="Accept {{ $user->name }}? They will be able to sign in.">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="btn-icon text-violet-600 hover:bg-violet-50 hover:text-violet-700"
+                                                                title="Accept {{ $user->name }}" aria-label="Accept {{ $user->name }}">
+                                                            <x-icon name="check" class="size-4" />
+                                                        </button>
+                                                    </form>
+                                                @elseif ($user->id !== auth()->id())
+                                                    <form method="POST" action="{{ route('admin.users.revoke', $user) }}" class="inline"
+                                                          data-confirm="Withdraw acceptance for {{ $user->name }}? They will not be able to sign in.">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="btn-icon text-ink-400 hover:bg-ink-100 hover:text-ink-700"
+                                                                title="Withdraw acceptance" aria-label="Withdraw acceptance for {{ $user->name }}">
+                                                            <x-icon name="refresh" class="size-4" />
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endif
+
                                             <a href="{{ route('admin.users.edit', $user) }}" class="btn-icon" title="Edit">
                                                 <x-icon name="pencil" class="size-4" />
                                             </a>

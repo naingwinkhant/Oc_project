@@ -252,6 +252,11 @@
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-xs font-medium text-ink-800"><?php echo e($item->name); ?></p>
                                 <p class="font-mono text-[0.6875rem] text-ink-400"><?php echo e($item->sku); ?></p>
+                                
+                                <p class="text-[0.6875rem] text-ink-500 tabular-nums">
+                                    <?php echo e($item->unitPriceFormatted()); ?> &times; <?php echo e($item->quantity); ?> <?php echo e($item->unit); ?>
+
+                                </p>
                                 <?php if($item->product): ?>
                                     <?php if (isset($component)) { $__componentOriginal55a2a145c73971d8b3899d9083ae76a0 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal55a2a145c73971d8b3899d9083ae76a0 = $attributes; } ?>
@@ -275,7 +280,7 @@
 <?php endif; ?>
                                 <?php endif; ?>
                             </div>
-                            <span class="shrink-0 text-xs font-semibold text-ink-900 tabular-nums">
+                            <span class="shrink-0 text-sm font-bold text-ink-900 tabular-nums">
                                 <?php echo e($item->lineTotalFormatted()); ?>
 
                             </span>

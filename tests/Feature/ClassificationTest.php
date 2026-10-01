@@ -162,4 +162,103 @@ class ClassificationTest extends TestCase
             ->delete(route('admin.categories.destroy', $category))
             ->assertForbidden();
     }
+
+    public function test_a_classification_gets_a_fitting_icon_from_its_name(): void
+    {
+        $expectations = [
+            'Fruits' => 'apple',
+            'Vegetables' => 'carrot',
+            'Salad & Greens' => 'carrot',
+            'Seafood' => 'fish',
+            'Beef' => 'meat',
+            'Milk' => 'bottle',
+            'Eggs' => 'egg',
+            'Bread' => 'wheat',
+            'Coffee & Tea' => 'coffee',
+            'Biscuits & Cookies' => 'candy',
+            'Cleaning Supplies' => 'droplet',
+            'Baby Care' => 'droplet',
+            'Frozen Foods' => 'ice-cream',
+        ];
+
+        foreach ($expectations as $name => $icon) {
+            $category = Category::factory()->make(['name' => $name]);
+
+            $this->assertSame($icon, $category->iconName(), $name.' should use the '.$icon.' mark');
+        }
+    }
+
+    public function test_an_unknown_classification_falls_back_to_a_generic_mark(): void
+    {
+        $this->assertSame('basket', Category::factory()->make(['name' => 'Zzz Novelties'])->iconName());
+    }
+
+    public function test_every_guess_is_a_mark_that_actually_exists(): void
+    {
+        $names = [
+            'Fruits', 'Vegetables', 'Salad & Greens', 'Herbs', 'Beef', 'Pork', 'Chicken', 'Seafood',
+            'Milk', 'Cheese', 'Yogurt', 'Eggs', 'Bread', 'Pastries', 'Cakes', 'Rice & Grains',
+            'Canned Goods', 'Pasta & Noodles', 'Oils & Vinegar', 'Spices', 'Water', 'Soft Drinks',
+            'Juice', 'Coffee & Tea', 'Beer & Wine', 'Chips & Crisps', 'Chocolate', 'Biscuits & Cookies',
+            'Nuts & Dried Fruit', 'Cleaning Supplies', 'Paper Goods', 'Laundry', 'Kitchenware',
+            'Trash & Storage', 'Bath & Body', 'Oral Care', 'Hair Care', 'Baby Care', 'Frozen Foods',
+            'Ready Meals', 'Something Entirely New',
+        ];
+
+        foreach ($names as $name) {
+            $icon = Category::factory()->make(['name' => $name])->iconName();
+
+            $this->assertContains(
+                $icon,
+                Category::ICONS,
+                $name.' resolved to "'.$icon.'", which is not in the icon set'
+            );
+        }
+    }
+
+    public function test_a_stored_icon_always_wins_over_the_guess(): void
+    {
+        $category = Category::factory()->make(['name' => 'Fruits', 'icon' => 'carrot']);
+
+        $this->assertSame('carrot', $category->iconName());
+    }
+
+    public function test_the_icon_can_be_chosen_in_the_admin_and_must_be_real(): void
+    {
+        $manager = User::factory()->manager()->create();
+
+        $this->actingAs($manager)
+            ->post(route('admin.categories.store'), [
+                'name' => 'Fresh Produce',
+                'icon' => 'carrot',
+                'is_active' => '1',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('carrot', Category::where('name', 'Fresh Produce')->firstOrFail()->icon);
+
+        $this->actingAs($manager)
+            ->post(route('admin.categories.store'), [
+                'name' => 'Bogus',
+                'icon' => 'definitely-not-an-icon',
+                'is_active' => '1',
+            ])
+            ->assertSessionHasErrors('icon');
+    }
+
+    public function test_the_phone_menu_lists_every_classification_with_its_mark(): void
+    {
+        $root = Category::factory()->create(['name' => 'Fresh Produce', 'icon' => 'carrot']);
+        Category::factory()->childOf($root)->create(['name' => 'Fruits', 'icon' => 'apple']);
+
+        $html = $this->get(route('catalog.index'))->assertOk()->getContent();
+
+        // The drawer is the phone menu, so it ships on every page.
+        $this->assertStringContainsString('id="mobile-menu"', $html);
+        $this->assertMatchesRegularExpression(
+            '#id="mobile-menu".*?Fresh Produce.*?Fruits#s',
+            $html,
+            'the phone menu lists the department and its aisle'
+        );
+    }
 }

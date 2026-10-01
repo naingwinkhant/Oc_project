@@ -8,6 +8,7 @@
     $roots = \App\Models\Category::query()->active()->roots()->with(['children' => fn ($q) => $q->active()->orderBy('position')])->get();
     $cartCount = app(\App\Cart\CartService::class)->count();
     $favouriteCount = app(\App\Cart\FavouriteService::class)->count();
+    $notifications = app(\App\Notifications\NotificationService::class);
 
     // Exactly one navigation entry may look selected, so work out which one.
     $activeCategory = request()->routeIs('catalog.show') ? request()->route('category') : null;
@@ -24,13 +25,15 @@
     <title>{{ $title ? $title.' · ' : '' }}{{ config('app.name') }}</title>
     <meta name="description" content="{{ $description ?? config('app.name') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- Applied before first paint, so night mode never flashes a white page. --}}
+    <x-theme-script />
     <link rel="icon" href="/favicon.ico">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-full">
 <div class="flex min-h-full flex-col">
 
-    <header class="sticky top-0 z-40 border-b border-ink-200 bg-white/90 backdrop-blur-md">
+    <header class="sticky top-0 z-40 border-b border-ink-200 bg-surface/90 backdrop-blur-md">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
             <a href="{{ route('catalog.index') }}" class="flex shrink-0 items-center gap-2.5">
                 <span class="grid size-9 place-items-center rounded-lg bg-brand-600 text-white shadow-raise">
@@ -53,20 +56,29 @@
 
                 <x-icon-button icon="cart" :href="route('cart.index')" :count="$cartCount" label="Cart" />
 
+                {{-- Flips between day and night straight away; the full choice,
+                     including "follow the system", lives in settings. --}}
+                <button type="button" class="btn-icon" data-theme-toggle
+                        title="Switch between day and night" aria-label="Switch between day and night">
+                    <x-icon name="sparkles" class="size-4.5 dark:hidden" />
+                    <x-icon name="clock" class="hidden size-4.5 dark:block" />
+                </button>
+
+                <x-icon-button icon="settings" :href="route('settings')" label="Settings"
+                              :active="request()->routeIs('settings')" />
+
+                <x-notifications />
+
                 @auth
+                    {{-- Only somebody who is already signed in as the team sees this.
+                         Shoppers are never offered a sign-in button: the public
+                         site has no customer accounts. --}}
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary btn-sm shrink-0 px-2.5 sm:px-3"
                        title="Staff dashboard" aria-label="Staff dashboard">
                         <span class="grid size-5 shrink-0 place-items-center">
                             <x-icon name="dashboard" class="size-4.5" />
                         </span>
                         <span class="hidden lg:inline">Dashboard</span>
-                    </a>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-secondary btn-sm shrink-0 px-2.5 sm:px-3">
-                        <span class="grid size-5 shrink-0 place-items-center">
-                            <x-icon name="logout" class="size-4.5 rotate-180" />
-                        </span>
-                        <span class="hidden sm:inline">Sign in</span>
                     </a>
                 @endauth
             </nav>
@@ -77,7 +89,7 @@
             </button>
         </div>
 
-        <div id="mobile-menu" class="hidden max-h-[70vh] overflow-y-auto border-t border-ink-200 bg-white px-4 py-3 md:hidden">
+        <div id="mobile-menu" class="hidden max-h-[70vh] overflow-y-auto border-t border-ink-200 bg-surface px-4 py-3 md:hidden">
             <p class="section-title mb-2">Classifications</p>
             <ul class="space-y-0.5">
                 <li>
@@ -102,6 +114,7 @@
                                // marks both a department and its sub-classification.
                                'nav-link-active' => $activeRootSlug === $root->slug && ! $activeChildSlug,
                            ])>
+                            <x-icon :name="$root->iconName()" class="size-4 shrink-0" />
                             {{ $root->name }}
                         </a>
                         @if ($root->children->isNotEmpty())
@@ -113,6 +126,7 @@
                                                'nav-link py-2 text-[0.8125rem]',
                                                'nav-link-active' => $activeChildSlug === $child->slug,
                                            ])>
+                                            <x-icon :name="$child->iconName()" class="size-4 shrink-0" />
                                             {{ $child->name }}
                                         </a>
                                     </li>
@@ -124,7 +138,7 @@
             </ul>
         </div>
 
-        <nav class="hidden border-t border-ink-200 bg-white md:block">
+        <nav class="hidden border-t border-ink-200 bg-surface md:block">
             <div class="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-1.5 lg:px-8">
                 <a href="{{ route('catalog.index') }}"
                    @class(['nav-link !py-1.5 whitespace-nowrap', 'nav-link-active' => request()->routeIs('catalog.index')])>
@@ -154,7 +168,7 @@
         {{ $slot }}
     </main>
 
-    <footer class="mt-16 border-t border-ink-200 bg-white">
+    <footer class="mt-16 border-t border-ink-200 bg-surface">
         <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4 lg:px-8">
             <div class="md:col-span-2">
                 <div class="flex items-center gap-2.5">
@@ -179,10 +193,19 @@
             </div>
 
             <div>
+                <p class="section-title mb-3">Store</p>
+                <ul class="space-y-2 text-sm">
+                    {{-- Services and Information live on the settings page rather
+                         than in the nav bar. --}}
+                    <li><a href="{{ route('settings') }}" class="text-ink-600 hover:text-brand-700">Settings, services &amp; information</a></li>
+                </ul>
+            </div>
+
+            <div>
                 <p class="section-title mb-3">Team</p>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="{{ route('admin.dashboard') }}" class="text-ink-600 hover:text-brand-700">Staff dashboard</a></li>
-                    <li><a href="{{ route('login') }}" class="text-ink-600 hover:text-brand-700">Sign in</a></li>
+                    {{-- The staff sign-in door, but never a customer one. --}}
+                    <li><a href="{{ route('staff.login.php') }}" class="text-ink-600 hover:text-brand-700">Staff sign in</a></li>
                 </ul>
             </div>
         </div>

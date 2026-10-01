@@ -28,7 +28,30 @@ class DashboardController extends Controller
             'movers' => $this->topMovers(),
             'activity' => $this->recentActivity(),
             'team' => $this->team(),
+            'waitingAccounts' => $this->waitingAccounts(),
         ]);
+    }
+
+    /**
+     * Accounts somebody has to decide on, newest first.
+     *
+     * Only an administrator or a manager ever sees this: accepting or turning
+     * an account down is their call alone, and the page behind these buttons is
+     * refused for anybody else.
+     *
+     * @return Collection<int, User>
+     */
+    private function waitingAccounts(): Collection
+    {
+        if (! auth()->user()?->canManageCatalog()) {
+            return new Collection;
+        }
+
+        return User::query()
+            ->pending()
+            ->orderBy('created_at')
+            ->limit(5)
+            ->get();
     }
 
     /**

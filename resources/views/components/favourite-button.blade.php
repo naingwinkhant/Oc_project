@@ -12,7 +12,7 @@
                 'size-10' => $size === 'lg',
                 $active
                     ? 'bg-rose-600 text-white ring-1 ring-rose-700/30 hover:bg-rose-700'
-                    : 'bg-white/85 text-ink-400 ring-1 ring-ink-200 backdrop-blur hover:bg-white hover:text-rose-500',
+                    : 'bg-surface/85 text-ink-400 ring-1 ring-ink-200 backdrop-blur hover:bg-surface hover:text-rose-500',
             ])
             title="{{ $active ? 'Remove from favourites' : 'Save to favourites' }}"
             aria-label="{{ $active ? 'Remove '.$product->name.' from favourites' : 'Save '.$product->name.' to favourites' }}"

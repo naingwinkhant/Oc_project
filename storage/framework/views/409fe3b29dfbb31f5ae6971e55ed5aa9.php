@@ -39,6 +39,57 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes(['title' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute('Order '.$order->order_number),'heading' => 'Order details','description' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($order->customer_name.' · '.$order->placed_at?->format('j M Y, g:i A'))]); ?>
+     <?php $__env->slot('actions', null, []); ?> 
+        
+        <?php if(auth()->user()?->canManageCatalog()): ?>
+            <?php if (! ($order->status->isClosed())): ?>
+                <a href="<?php echo e(route('admin.orders.edit', $order)); ?>" class="btn btn-secondary btn-sm">
+                    <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'pencil','class' => 'size-4']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'pencil','class' => 'size-4']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?> Edit details
+                </a>
+            <?php endif; ?>
+
+            <?php if (isset($component)) { $__componentOriginalec2502b834f860c8e30d229aa8f280e2 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalec2502b834f860c8e30d229aa8f280e2 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.delete-button','data' => ['name' => 'Delete order','icon' => 'trash','action' => route('admin.orders.destroy', $order),'confirm' => 'Delete order '.$order->order_number.'? This cannot be undone.','class' => 'btn btn-secondary btn-sm text-rose-600 hover:bg-rose-50 hover:text-rose-700']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('delete-button'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'Delete order','icon' => 'trash','action' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('admin.orders.destroy', $order)),'confirm' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute('Delete order '.$order->order_number.'? This cannot be undone.'),'class' => 'btn btn-secondary btn-sm text-rose-600 hover:bg-rose-50 hover:text-rose-700']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalec2502b834f860c8e30d229aa8f280e2)): ?>
+<?php $attributes = $__attributesOriginalec2502b834f860c8e30d229aa8f280e2; ?>
+<?php unset($__attributesOriginalec2502b834f860c8e30d229aa8f280e2); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalec2502b834f860c8e30d229aa8f280e2)): ?>
+<?php $component = $__componentOriginalec2502b834f860c8e30d229aa8f280e2; ?>
+<?php unset($__componentOriginalec2502b834f860c8e30d229aa8f280e2); ?>
+<?php endif; ?>
+        <?php endif; ?>
+     <?php $__env->endSlot(); ?>
+
     <div class="grid items-start gap-5 lg:grid-cols-3">
         <div class="space-y-5 lg:col-span-2">
             <section class="card overflow-hidden">
@@ -182,22 +233,26 @@
                 <div class="card-body space-y-3 text-sm">
                     <?php if($order->paid_at): ?>
                         <p class="text-xs text-emerald-700">Paid <?php echo e($order->paid_at->diffForHumans()); ?></p>
-                    <?php else: ?>
+                    <?php endif; ?>
+
+                    
+                    <?php $__currentLoopData = $order->status->options(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <form method="POST" action="<?php echo e(route('admin.orders.status', $order)); ?>"
-                              onsubmit="return confirm('Cancel this order?')">
+                              <?php if($option === \App\Enums\OrderStatus::Cancelled): ?> onsubmit="return confirm('Cancel this order?')" <?php endif; ?>>
                             <?php echo csrf_field(); ?>
-                            <input type="hidden" name="status" value="cancelled">
-                            <button type="submit" class="btn btn-secondary btn-sm w-full text-rose-600 hover:bg-rose-50">
+                            <input type="hidden" name="status" value="<?php echo e($option->value); ?>">
+                            <button type="submit"
+                                    class="btn btn-sm w-full <?php echo e($option === \App\Enums\OrderStatus::Completed ? 'btn-primary' : 'btn-secondary'); ?> <?php echo e($option === \App\Enums\OrderStatus::Cancelled ? 'text-rose-600 hover:bg-rose-50' : ''); ?>">
                                 <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'x','class' => 'size-3.5']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => $option === \App\Enums\OrderStatus::Completed ? 'check' : ($option === \App\Enums\OrderStatus::Refunded ? 'refresh' : 'x'),'class' => 'size-3.5']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('icon'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['name' => 'x','class' => 'size-3.5']); ?>
+<?php $component->withAttributes(['name' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($option === \App\Enums\OrderStatus::Completed ? 'check' : ($option === \App\Enums\OrderStatus::Refunded ? 'refresh' : 'x')),'class' => 'size-3.5']); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
@@ -207,9 +262,17 @@
 <?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
 <?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
 <?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
-<?php endif; ?> Cancel order
+<?php endif; ?>
+                                <?php echo e($option === \App\Enums\OrderStatus::Completed ? 'Mark completed' : ($option === \App\Enums\OrderStatus::Refunded ? 'Mark refunded' : 'Cancel order')); ?>
+
                             </button>
                         </form>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                    <?php if($order->status->options() === []): ?>
+                        <p class="text-xs text-ink-500">
+                            This order is closed, so there is nothing left to change.
+                        </p>
                     <?php endif; ?>
 
                     <div class="border-t border-ink-100 pt-3">

@@ -23,11 +23,13 @@ const toggle = (id, force) => {
 
 const closeTogglesOnOutsideClick = () => {
     document.addEventListener('click', (event) => {
-        if (event.target.closest('[data-toggle], #mobile-menu')) {
+        if (event.target.closest('[data-toggle], #mobile-menu, [data-notifications]')) {
             return;
         }
 
         toggle('mobile-menu', false);
+        toggle('notifications-panel', false);
+        toggle('notifications-overlay', false);
     });
 
     // Growing past the phone breakpoint swaps the drawer for the nav bar, so
@@ -37,6 +39,60 @@ const closeTogglesOnOutsideClick = () => {
             toggle('mobile-menu', false);
         }
     }, { passive: true });
+};
+
+/**
+ * The notification bell.
+ *
+ * Removing a notification happens in the background, so the item disappears
+ * and the badge counts down without the page jumping. Each form still points
+ * at a real route, so it degrades to a normal post when fetch is unavailable.
+ */
+const setupNotifications = () => {
+    const setBadge = (badge) => {
+        document.querySelectorAll('[data-notification-badge]').forEach((node) => {
+            if (badge === null || badge === undefined) {
+                node.textContent = '';
+                node.hidden = true;
+
+                return;
+            }
+
+            node.textContent = badge;
+            node.hidden = false;
+        });
+    };
+
+    const showEmptyIfDone = () => {
+        if (document.querySelector('[data-notification-item]')) {
+            return;
+        }
+
+        document.querySelectorAll('[data-notification-empty]').forEach((node) => node.classList.remove('hidden'));
+    };
+
+    const dismiss = (form) => {
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+            .then((response) => (response.ok ? response.json() : Promise.reject()))
+            .then((data) => {
+                setBadge(data.badge ?? null);
+                form.closest('[data-notification-item]')?.remove();
+                showEmptyIfDone();
+            })
+            .catch(() => form.submit());
+    };
+
+    on('[data-notification-dismiss], [data-notification-clear]', 'submit', (event) => {
+        event.preventDefault();
+        dismiss(event.currentTarget);
+    });
 };
 
 /**
@@ -450,6 +506,101 @@ const setupDeliveryQuote = () => {
 };
 
 /**
+ * Day / night / system.
+ *
+ * The choice is applied to <html> straight away and kept in localStorage, then
+ * posted to the account so it follows a signed-in shopper to another device.
+ * "system" keeps listening to the operating system while the page is open.
+ */
+const setupThemePicker = () => {
+    const KEY = 'ggs.theme';
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const apply = (choice) => {
+        const dark = choice === 'dark' || ((!choice || choice === 'system') && media.matches);
+        document.documentElement.classList.toggle('dark', dark);
+    };
+
+    /**
+     * Move the chosen marker onto whichever option is really in force.
+     *
+     * The header shortcut and the operating system both change the appearance
+     * without touching the form, so without this the Appearance panel kept
+     * claiming "System" after the shortcut had already switched to night.
+     */
+    const markChosen = (choice) => {
+        document.querySelectorAll('[data-theme-choice]').forEach((input) => {
+            const selected = input.value === choice;
+            input.checked = selected;
+
+            const label = input.closest('label');
+            if (!label) {
+                return;
+            }
+
+            label.classList.toggle('border-brand-600', selected);
+            label.classList.toggle('bg-brand-50', selected);
+            label.classList.toggle('ring-1', selected);
+            label.classList.toggle('ring-brand-600', selected);
+            label.classList.toggle('border-ink-200', !selected);
+            label.classList.toggle('hover:border-ink-300', !selected);
+            label.classList.toggle('hover:bg-ink-50', !selected);
+        });
+    };
+
+    const choose = (choice) => {
+        apply(choice);
+        markChosen(choice);
+        remember(choice);
+    };
+
+    const remember = (choice) => {
+        localStorage.setItem(KEY, choice);
+
+        const token = document.querySelector('meta[name="csrf-token"]')?.content;
+
+        if (token) {
+            fetch(document.querySelector('[data-theme-form]')?.action || '/settings/theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': token,
+                },
+                body: JSON.stringify({ theme: choice }),
+                credentials: 'same-origin',
+            }).catch(() => { /* the device still remembers it */ });
+        }
+    };
+
+    on('[data-theme-choice]', 'change', (event) => {
+        choose(event.target.value);
+    });
+
+    // The header shortcut just flips whatever is showing now.
+    on('[data-theme-toggle]', 'click', () => {
+        const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+        choose(next);
+    });
+
+    media.addEventListener('change', () => {
+        const saved = localStorage.getItem(KEY);
+
+        if (!saved || saved === 'system') {
+            apply(saved);
+            markChosen(saved || 'system');
+        }
+    });
+
+    // On a device that has already chosen, the stored answer is the real one, so
+    // the panel agrees with what is actually being painted.
+    const stored = localStorage.getItem(KEY);
+    if (stored && document.querySelector('[data-theme-choice]')) {
+        markChosen(stored);
+    }
+};
+
+/**
  * The homepage carousel.
  *
  * Every slide is stacked and faded, so nothing reflows. Autoplay stops for
@@ -604,6 +755,37 @@ const setupCarousels = () => {
     });
 };
 
+/**
+ * The loading mark on the set-password page.
+ *
+ * The server sends the form, so it is on screen before this runs and stays
+ * there if this never runs. Only when the script is alive and the visitor wants
+ * motion does the mark take over for a moment.
+ */
+const setupLoadingIntro = () => {
+    const content = document.querySelector('[data-intro-content]');
+    const loading = document.querySelector('[data-intro-loading]');
+
+    if (!content || !loading) {
+        return;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
+    content.hidden = true;
+    loading.hidden = false;
+
+    window.setTimeout(() => {
+        loading.hidden = true;
+        content.hidden = false;
+
+        // Hand the caret back to the field they actually have to fill in.
+        content.querySelector('input[type="password"]')?.focus();
+    }, Number(loading.dataset.introDelay || 2000));
+};
+
 const boot = () => {
     // A throw in one feature used to abort everything after it, so a single
     // mistake silently killed the delivery quote, the back links and the
@@ -630,6 +812,9 @@ const boot = () => {
     safely('delivery-quote', setupDeliveryQuote);
     safely('outside-click', closeTogglesOnOutsideClick);
     safely('back-links', setupBackLinks);
+    safely('theme', setupThemePicker);
+    safely('notifications', setupNotifications);
+    safely('loading-intro', setupLoadingIntro);
     safely('carousels', setupCarousels);
 
     document.body.dataset.ready = 'true';

@@ -108,15 +108,23 @@
                             </span>
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-xs font-medium text-ink-800">{{ $item['product']->name }}</p>
+                                {{-- The amount, shown as the arithmetic behind it. --}}
+                                <p class="text-[0.6875rem] text-ink-500 tabular-nums">
+                                    {{ \App\Support\Money::format($item['product']->effectivePrice()) }}
+                                    &times; {{ $item['quantity'] }}
+                                    {{ $item['product']->unit }}
+                                </p>
                                 @if ($item['product']->hasDiscount())
                                     <p class="text-[0.6875rem] tabular-nums">
                                         <s class="text-rose-600">{{ \App\Support\Money::format($item['product']->price) }}</s>
-                                        <span class="ms-1 text-blue-700">{{ \App\Support\Money::format($item['product']->effectivePrice()) }}</span>
+                                        <span class="ms-1 font-medium text-blue-700">
+                                            {{ $item['product']->discountPercent() }}% off
+                                        </span>
                                     </p>
                                 @endif
                                 <x-freshness :product="$item['product']" variant="compact" />
                             </div>
-                            <span class="shrink-0 text-xs font-semibold text-blue-700 tabular-nums">
+                            <span class="shrink-0 text-sm font-bold text-blue-700 tabular-nums">
                                 {{ \App\Support\Money::format($item['line_total']) }}
                             </span>
                         </li>

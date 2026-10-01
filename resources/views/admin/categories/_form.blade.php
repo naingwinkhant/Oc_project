@@ -47,6 +47,24 @@
                 </div>
 
                 <div>
+                    <label for="icon" class="label">Representative icon</label>
+                    <div class="flex flex-wrap gap-1.5" data-icon-picker>
+                        @foreach (\App\Models\Category::ICONS as $icon)
+                            <label @class([
+                                'grid size-9 cursor-pointer place-items-center rounded-lg border transition',
+                                'border-brand-600 bg-brand-50 text-brand-700' => old('icon', $category->icon ?? 'basket') === $icon,
+                                'border-ink-200 text-ink-500 hover:border-ink-300 hover:bg-ink-50' => old('icon', $category->icon ?? 'basket') !== $icon,
+                            ]) title="{{ ucfirst(str_replace('-', ' ', $icon)) }}">
+                                <input type="radio" name="icon" value="{{ $icon }}" class="sr-only"
+                                       @checked(old('icon', $category->icon ?? 'basket') === $icon)>
+                                <x-icon :name="$icon" class="size-4.5" />
+                            </label>
+                        @endforeach
+                    </div>
+                    <p class="help">Shown beside the classification in the catalogue, the navigation and the footer.</p>
+                </div>
+
+                <div>
                     <label for="is_active" class="label">Visibility</label>
                     <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-ink-200 p-3 transition hover:bg-ink-50">
                         <input type="checkbox" name="is_active" value="1" id="is_active"

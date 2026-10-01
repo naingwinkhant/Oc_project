@@ -14,7 +14,7 @@ class Money
 {
     public static function symbol(): string
     {
-        return (string) config('shop.currency.symbol', 'Ks');
+        return (string) config('shop.currency_symbol', 'Ks');
     }
 
     public static function code(): string

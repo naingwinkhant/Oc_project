@@ -29,14 +29,14 @@
 
 <?php if (isset($component)) { $__componentOriginal5863877a5171c196453bfa0bd807e410 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal5863877a5171c196453bfa0bd807e410 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.layouts.app','data' => ['title' => 'Users','heading' => 'Users &amp; roles','description' => 'Who can access the inventory system']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.layouts.app','data' => ['title' => 'Users','heading' => 'Users & roles','description' => 'Who can access the inventory system']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('layouts.app'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['title' => 'Users','heading' => 'Users &amp; roles','description' => 'Who can access the inventory system']); ?>
+<?php $component->withAttributes(['title' => 'Users','heading' => 'Users & roles','description' => 'Who can access the inventory system']); ?>
      <?php $__env->slot('actions', null, []); ?> 
         <a href="<?php echo e(route('admin.users.create')); ?>" class="btn btn-primary btn-sm">
             <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
@@ -268,9 +268,86 @@
                                             'bg-emerald-50 text-emerald-700 ring-emerald-600/20' => $user->is_active,
                                             'bg-ink-100 text-ink-500 ring-ink-500/10' => ! $user->is_active,
                                         ]); ?>"><?php echo e($user->is_active ? 'Active' : 'Disabled'); ?></span>
+
+                                        <?php if (! ($user->hasPassword())): ?>
+                                            <span class="badge mt-1 block w-fit bg-amber-50 text-amber-700 ring-amber-600/20"
+                                                  title="This person has not chosen a password yet, so cannot sign in.">
+                                                No password yet
+                                            </span>
+                                        <?php endif; ?>
+
+                                        <?php if($user->isPending()): ?>
+                                            <span class="badge mt-1 block w-fit bg-violet-50 text-violet-700 ring-violet-600/20"
+                                                  title="Waiting for an administrator or manager to accept this account.">
+                                                Waiting to be accepted
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-end">
                                         <div class="flex items-center justify-end gap-0.5">
+                                            
+                                            <?php if(auth()->user()?->canManageCatalog()): ?>
+                                                <?php if($user->isPending()): ?>
+                                                    <form method="POST" action="<?php echo e(route('admin.users.approve', $user)); ?>" class="inline"
+                                                          data-confirm="Accept <?php echo e($user->name); ?>? They will be able to sign in.">
+                                                        <?php echo csrf_field(); ?>
+                                                        <?php echo method_field('PATCH'); ?>
+                                                        <button type="submit" class="btn-icon text-violet-600 hover:bg-violet-50 hover:text-violet-700"
+                                                                title="Accept <?php echo e($user->name); ?>" aria-label="Accept <?php echo e($user->name); ?>">
+                                                            <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'check','class' => 'size-4']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'check','class' => 'size-4']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                                                        </button>
+                                                    </form>
+                                                <?php elseif($user->id !== auth()->id()): ?>
+                                                    <form method="POST" action="<?php echo e(route('admin.users.revoke', $user)); ?>" class="inline"
+                                                          data-confirm="Withdraw acceptance for <?php echo e($user->name); ?>? They will not be able to sign in.">
+                                                        <?php echo csrf_field(); ?>
+                                                        <?php echo method_field('PATCH'); ?>
+                                                        <button type="submit" class="btn-icon text-ink-400 hover:bg-ink-100 hover:text-ink-700"
+                                                                title="Withdraw acceptance" aria-label="Withdraw acceptance for <?php echo e($user->name); ?>">
+                                                            <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.icon','data' => ['name' => 'refresh','class' => 'size-4']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('icon'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'refresh','class' => 'size-4']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $attributes = $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__attributesOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc)): ?>
+<?php $component = $__componentOriginalce262628e3a8d44dc38fd1f3965181bc; ?>
+<?php unset($__componentOriginalce262628e3a8d44dc38fd1f3965181bc); ?>
+<?php endif; ?>
+                                                        </button>
+                                                    </form>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+
                                             <a href="<?php echo e(route('admin.users.edit', $user)); ?>" class="btn-icon" title="Edit">
                                                 <?php if (isset($component)) { $__componentOriginalce262628e3a8d44dc38fd1f3965181bc = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalce262628e3a8d44dc38fd1f3965181bc = $attributes; } ?>

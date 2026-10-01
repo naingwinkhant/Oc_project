@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\History\ViewHistoryService;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\Money;
@@ -115,6 +116,7 @@ class CatalogController extends Controller
             ->active()
             ->newArrivals()
             ->when($request->boolean('in_stock'), fn ($q) => $q->where('stock', '>', 0))
+            ->when($request->boolean('on_sale'), fn ($q) => $q->featured())
             ->when(
                 $request->filled('sort'),
                 fn ($q) => $this->applySort($q, $request->string('sort')->toString()),
@@ -149,6 +151,8 @@ class CatalogController extends Controller
             ->inCategory($category)
             ->search($term)
             ->when($request->boolean('in_stock'), fn ($q) => $q->where('stock', '>', 0))
+            ->when($request->boolean('on_sale'), fn ($q) => $q->featured())
+            ->when($request->boolean('coming_soon'), fn ($q) => $q->comingSoon())
             ->when(
                 $request->filled('sort'),
                 fn ($q) => $this->applySort($q, $request->string('sort')->toString()),
@@ -193,6 +197,10 @@ class CatalogController extends Controller
                     ->get()
             );
         }
+
+        // Remembered for the shopper's history, after the view counter so a
+        // refused or missing page does not leave a trace.
+        app(ViewHistoryService::class)->record($product);
 
         return view('catalog.product', [
             'product' => $product,

@@ -25,8 +25,7 @@ class CategoryRequest extends FormRequest
             'parent_id' => ['nullable', 'integer', Rule::exists(Category::class, 'id'), Rule::notIn([$id])],
             'description' => ['nullable', 'string', 'max:2000'],
             'color' => ['nullable', 'string', 'max:20'],
-            'icon' => ['nullable', 'string', 'max:60'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'icon' => ['nullable', 'string', Rule::in(Category::ICONS)],            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_active' => ['nullable', 'boolean'],
         ];
     }

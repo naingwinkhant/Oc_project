@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Auth\PasswordLink;
+use App\Enums\AccountStatus;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserRequest;
@@ -14,6 +16,8 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    public function __construct(private readonly PasswordLink $links) {}
+
     public function index(Request $request): View
     {
         $users = User::query()
@@ -42,10 +46,14 @@ class UserController extends Controller
 
     public function store(UserRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-        $data['password'] = $data['password'] ?? 'password';
-
-        $user = User::create($data);
+        $user = User::create([
+            ...$request->safe()->only(['username', 'name', 'email', 'phone', 'role', 'is_active']),
+            // Nothing to guess: the holder sets their own through the link below.
+            'password' => null,
+            // Waiting to be accepted, so a username nobody agreed to is not a
+            // way into the shop.
+            'status' => AccountStatus::Pending,
+        ]);
 
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -55,7 +63,57 @@ class UserController extends Controller
             'description' => 'Created user account for '.$user->name,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', $user->name.' can now sign in.');
+        $link = $this->links->issue($user);
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', $user->name.' can set a password, but the account is waiting to be accepted.')
+            ->with('setPasswordLink', route('set-password', ['token' => $link]));
+    }
+
+    /**
+     * Accept a pending account, which is what lets it sign in.
+     */
+    public function approve(Request $request, User $user): RedirectResponse
+    {
+        if ($user->isApproved()) {
+            return back()->with('error', $user->name.' has already been accepted.');
+        }
+
+        $user->approve($request->user());
+
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'updated',
+            'subject_type' => User::class,
+            'subject_id' => $user->id,
+            'description' => 'Accepted the account for '.$user->name,
+        ]);
+
+        return back()->with('success', $user->name.' was accepted and can sign in once they set a password.');
+    }
+
+    /**
+     * Withdraw an acceptance, locking that account out again.
+     */
+    public function revokeApproval(Request $request, User $user): RedirectResponse
+    {
+        if ($user->isPending()) {
+            return back()->with('error', $user->name.' is already waiting to be accepted.');
+        }
+
+        $name = $user->name;
+        $user->revokeApproval();
+
+        ActivityLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'updated',
+            'subject_type' => User::class,
+            'subject_id' => $user->id,
+            'description' => 'Withdrew acceptance for '.$name,
+        ]);
+
+        return back()->with('success', $name.' can no longer sign in.');
     }
 
     public function edit(User $user): View
@@ -65,10 +123,16 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $user): RedirectResponse
     {
-        $data = $request->validated();
+        $data = $request->safe()->only(['username', 'name', 'email', 'phone', 'role', 'is_active']);
 
-        if (empty($data['password'])) {
-            unset($data['password']);
+        // Changing your own role is already refused by UserRequest; this covers
+        // the other way the last administrator could be lost.
+        $losesAdmin = $user->isAdmin()
+            && (($data['role'] ?? $user->role->value) !== Role::Admin->value
+                || array_key_exists('is_active', $data) && ! $data['is_active']);
+
+        if ($losesAdmin && $this->remainingAdminCount($user) < 1) {
+            return back()->with('error', 'At least one administrator must remain. Promote somebody else first.');
         }
 
         $user->update($data);
@@ -84,6 +148,22 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', $user->name.' was updated.');
     }
 
+    /**
+     * How many administrators would be left if this change went through.
+     *
+     * Guards the role-change and disable paths as well as delete, because losing
+     * the last administrator through any of them means nobody can create users
+     * or accept an account afterwards.
+     */
+    private function remainingAdminCount(User $subject): int
+    {
+        return User::query()
+            ->where('role', Role::Admin->value)
+            ->where('is_active', true)
+            ->where('id', '!=', $subject->id)
+            ->count();
+    }
+
     public function destroy(Request $request, User $user): RedirectResponse
     {
         if ($user->id === $request->user()->id) {
@@ -93,7 +173,6 @@ class UserController extends Controller
         if ($user->isAdmin() && User::query()->where('role', Role::Admin->value)->count() <= 1) {
             return back()->with('error', 'At least one administrator must remain.');
         }
-
         if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
             Storage::disk('public')->delete($user->avatar);
         }

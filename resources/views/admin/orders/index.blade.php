@@ -57,6 +57,7 @@
                                 <th class="text-end">Total</th>
                                 <th>Status</th>
                                 <th class="hidden lg:table-cell text-end">Placed</th>
+                                <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -92,6 +93,34 @@
                                     </td>
                                     <td class="hidden whitespace-nowrap text-right text-xs text-ink-400 lg:table-cell">
                                         {{ $order->placed_at?->diffForHumans() ?? '—' }}
+                                    </td>
+                                    <td class="text-end">
+                                        @if (auth()->user()?->canManageCatalog())
+                                            <div class="flex items-center justify-end gap-1">
+                                                {{-- Only the moves this order can actually make are
+                                                     offered, so nothing here can be refused. --}}
+                                                @if ($order->status->canTransitionTo(\App\Enums\OrderStatus::Completed))
+                                                    <form method="POST" action="{{ route('admin.orders.status', $order) }}"
+                                                          data-confirm="Mark {{ $order->order_number }} as completed?">
+                                                        @csrf
+                                                        <input type="hidden" name="status" value="completed">
+                                                        <button type="submit" class="btn btn-secondary btn-sm" title="Mark completed">
+                                                            <x-icon name="check" class="size-3.5" />
+                                                            <span class="hidden xl:inline">Complete</span>
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                @if (! $order->isPaid() && $order->status !== \App\Enums\OrderStatus::Completed)
+                                                    <x-delete-button name="" icon="trash" label="Delete {{ $order->order_number }}"
+                                                                    :action="route('admin.orders.destroy', $order)"
+                                                                    :confirm="'Delete order '.$order->order_number.'? This cannot be undone.'"
+                                                                    class="btn-icon text-rose-600 hover:bg-rose-50 hover:text-rose-700" />
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-ink-400">—</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

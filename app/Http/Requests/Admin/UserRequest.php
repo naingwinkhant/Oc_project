@@ -6,7 +6,6 @@ use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class UserRequest extends FormRequest
 {
@@ -34,7 +33,8 @@ class UserRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', Rule::in(Role::values())],
             'is_active' => ['nullable', 'boolean'],
-            'password' => [$id ? 'nullable' : 'required', 'confirmed', Password::min(8)],
+            // No password here. The account holder sets their own through the
+            // one-time link issued when the account is created.
         ];
     }
 

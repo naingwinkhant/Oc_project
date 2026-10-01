@@ -8,6 +8,7 @@ use App\Enums\PaymentGateway;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Notifications\TeamAlertService;
 use App\Payments\PaymentManager;
 use App\Support\Delivery;
 use Illuminate\Http\RedirectResponse;
@@ -113,6 +114,10 @@ class CheckoutController extends Controller
         });
 
         $this->cart->clear();
+
+        // Somebody is on the till, so tell them a basket has just been placed.
+        // The shopper is never shown this: team alerts are behind sign-in.
+        app(TeamAlertService::class)->orderPlaced($order);
 
         return redirect()->route('checkout.show', $order);
     }

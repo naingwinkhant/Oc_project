@@ -14,6 +14,7 @@
             'label' => 'Overview',
             'items' => [
                 ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'dashboard', 'permission' => null],
+                ['route' => 'history.index', 'label' => 'My history', 'icon' => 'clock', 'permission' => null],
             ],
         ],
         [
@@ -27,6 +28,8 @@
         [
             'label' => 'Operations',
             'items' => [
+                ['route' => 'admin.orders.index', 'label' => 'Orders', 'icon' => 'clipboard', 'permission' => null, 'pill' => 'orders'],
+                ['route' => 'admin.notices.index', 'label' => 'Notices', 'icon' => 'bell', 'permission' => null],
                 ['route' => 'admin.stock.index', 'label' => 'Stock movements', 'icon' => 'clipboard', 'permission' => null],
                 ['route' => 'admin.stock.low', 'label' => 'Low stock alerts', 'icon' => 'alert', 'permission' => null, 'pill' => 'lowStock'],
             ],
@@ -35,12 +38,21 @@
             'label' => 'Administration',
             'items' => [
                 ['route' => 'admin.users.index', 'label' => 'Users & roles', 'icon' => 'users', 'permission' => 'users'],
+                ['route' => 'admin.approvals.index', 'label' => 'New accounts', 'icon' => 'users', 'permission' => 'catalog', 'pill' => 'approvals'],
                 ['route' => 'admin.activity.index', 'label' => 'Activity log', 'icon' => 'clock', 'permission' => 'catalog'],
             ],
         ],
     ];
 
-    $lowStockCount = \App\Models\Product::query()->lowStock()->count();
+$lowStockCount = \App\Models\Product::query()->lowStock()->count();
+    // Orders this person has not cleared from the bell yet. The bell asks for the
+    // same list, so the service only runs the query once per request.
+    $openOrderCount = app(\App\Notifications\TeamAlertService::class)->unreadCount();
+    // Registrations waiting for somebody to accept or turn them down.
+    $pendingAccounts = $user?->canManageCatalog()
+        ? \App\Models\User::query()->where('status', \App\Enums\AccountStatus::Pending)->count()
+        : 0;
+    $notifications = app(\App\Notifications\NotificationService::class);
 @endphp
 
 <!DOCTYPE html>
@@ -50,6 +62,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ? $title.' · ' : '' }}{{ config('app.name') }}</title>
+    {{-- Applied before first paint, so night mode never flashes a white page. --}}
+    <x-theme-script />
     <link rel="icon" href="/favicon.ico">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -59,7 +73,7 @@
     <div id="sidebar-overlay" data-overlay-lock="true" data-toggle="sidebar-overlay!" class="fixed inset-0 z-40 hidden bg-ink-950/50 backdrop-blur-sm lg:hidden"></div>
 
     <aside id="sidebar" data-overlay-lock="true"
-           class="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r border-ink-200 bg-white lg:flex">
+           class="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r border-ink-200 bg-surface lg:flex">
         <div class="flex h-16 shrink-0 items-center gap-2.5 border-b border-ink-200 px-5">
             <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-600 text-white shadow-raise">
                 <x-icon name="store" class="size-5" />
@@ -93,9 +107,24 @@
                                        @if ($active) aria-current="page" @endif>
                                         <x-icon :name="$item['icon']" class="size-[1.125rem] shrink-0" />
                                         <span class="truncate">{{ $item['label'] }}</span>
-                                        @if (($item['pill'] ?? null) === 'lowStock' && $lowStockCount > 0)
+@if (($item['pill'] ?? null) === 'lowStock' && $lowStockCount > 0)
                                             <span class="ms-auto rounded-full bg-rose-100 px-1.5 py-0.5 text-[0.625rem] font-bold text-rose-700 tabular-nums">
                                                 {{ $lowStockCount > 99 ? '99+' : $lowStockCount }}
+                                            </span>
+                                        @endif
+                                        {{-- Orders the till has not dealt with yet. Never
+                                             counts past 99, so the badge keeps its width. --}}
+                                        @if (($item['pill'] ?? null) === 'orders' && $openOrderCount > 0)
+                                            <span data-order-pill
+                                                  class="ms-auto rounded-full bg-rose-100 px-1.5 py-0.5 text-[0.625rem] font-bold text-rose-700 tabular-nums">
+                                                {{ $openOrderCount > 99 ? '99+' : $openOrderCount }}
+                                            </span>
+                                        @endif
+                                        {{-- Registrations waiting to be accepted. --}}
+                                        @if (($item['pill'] ?? null) === 'approvals' && $pendingAccounts > 0)
+                                            <span data-approval-pill
+                                                  class="ms-auto rounded-full bg-violet-100 px-1.5 py-0.5 text-[0.625rem] font-bold text-violet-700 tabular-nums">
+                                                {{ $pendingAccounts > 99 ? '99+' : $pendingAccounts }}
                                             </span>
                                         @endif
                                     </a>
@@ -136,7 +165,7 @@
     </aside>
 
     <div class="flex min-w-0 flex-1 flex-col lg:ps-72">
-        <header class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-ink-200 bg-white/85 px-4 backdrop-blur-md sm:px-6">
+        <header class="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-ink-200 bg-surface/85 px-4 backdrop-blur-md sm:px-6">
             <button type="button" class="btn-icon lg:hidden" data-toggle="sidebar,sidebar-overlay" aria-label="Open menu">
                 <x-icon name="menu" />
             </button>
@@ -162,6 +191,9 @@
             @if ($actions)
                 <div class="flex shrink-0 items-center gap-2">{!! $actions !!}</div>
             @endif
+
+            {{-- Same bell as the shop, so an announcement reaches staff too. --}}
+            <x-notifications :team="true" />
         </header>
 
         <main class="flex-1 px-4 py-5 sm:px-6 sm:py-6">

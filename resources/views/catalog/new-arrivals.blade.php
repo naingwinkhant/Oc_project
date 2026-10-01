@@ -18,6 +18,34 @@
         </section>
 
         <div class="mb-4 flex flex-wrap items-center gap-3">
+            <x-filter-drawer id="arrivals-filters" label="Filters"
+                             :active="(int) request()->boolean('in_stock')
+                                 + (int) request()->boolean('on_sale')
+                                 + (int) request()->filled('q')">
+                <form method="GET" class="space-y-3">
+                    @if (request('q'))
+                        <input type="hidden" name="q" value="{{ request('q') }}">
+                    @endif
+
+                    <p class="section-title">Refine</p>
+
+                    <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                        <input type="checkbox" name="in_stock" value="1" @checked(request()->boolean('in_stock')) class="checkbox">
+                        In stock only
+                    </label>
+
+                    <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+                        <input type="checkbox" name="on_sale" value="1" @checked(request()->boolean('on_sale')) class="checkbox">
+                        On promotion
+                    </label>
+
+                    <div class="flex gap-2 pt-1">
+                        <button type="submit" class="btn btn-primary flex-1">Apply filters</button>
+                        <a href="{{ route('catalog.new-arrivals') }}" class="btn btn-ghost">Clear</a>
+                    </div>
+                </form>
+            </x-filter-drawer>
+
             <p class="text-sm text-ink-600">
                 Sorted by <span class="font-semibold text-ink-900">newest first</span>
             </p>
@@ -34,13 +62,6 @@
                         <option value="{{ $value }}" @selected(request('sort', 'newest') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-            </form>
-
-            <form method="GET">
-                <label class="flex cursor-pointer items-center gap-2 text-sm text-ink-600">
-                    <input type="checkbox" name="in_stock" value="1" @checked(request()->boolean('in_stock')) data-autosubmit class="checkbox">
-                    In stock
-                </label>
             </form>
         </div>
 
