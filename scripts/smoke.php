@@ -395,8 +395,25 @@ check('manager GET /admin/manager', req($base.'/admin/manager'), [200]);
 check('manager GET /admin/approvals', req($base.'/admin/approvals'), [200], ['New accounts']);
 check('manager GET /admin/users (forbidden)', req($base.'/admin/users'), [403]);
 
+// --- advertising ------------------------------------------------------------
+
+// The manager writes the slides; staff may read the list but not write one.
+check('manager GET /admin/advertisements', req($base.'/admin/advertisements'), [200], ['Advertisements']);
+check('manager GET /admin/advertisements/create', req($base.'/admin/advertisements/create'), [200], ['New advertisement']);
+
+check('POST /logout', req($base.'/logout', ['_token' => token(req($base.'/admin/advertisements')['body'])]), [200]);
+
+check('POST /staff/login.php (staff again)', req($base.'/staff/login.php', [
+    '_token' => token(req($base.'/staff/login.php')['body']),
+    'email' => 'staff@supermarket.test',
+    'password' => 'password',
+]), [200]);
+
+check('staff GET /admin/advertisements (read only)', req($base.'/admin/advertisements'), [200], ['Advertisements']);
+check('staff GET /admin/advertisements/create (forbidden)', req($base.'/admin/advertisements/create'), [403]);
+
 // A customer reaches their own page and nothing in the admin area.
-check('POST /logout', req($base.'/logout', ['_token' => token(req($base.'/admin/manager')['body'])]), [200]);
+check('POST /logout', req($base.'/logout', ['_token' => token(req($base.'/admin/advertisements')['body'])]), [200]);
 
 check('POST /create-account renders', req($base.'/create-account'), [200], ['Create account']);
 

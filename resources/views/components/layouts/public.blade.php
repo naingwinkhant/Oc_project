@@ -34,7 +34,7 @@
 <div class="flex min-h-full flex-col">
 
     <header class="sticky top-0 z-40 border-b border-ink-200 bg-surface/90 backdrop-blur-md">
-        <div class="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
+<div class="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:h-16 sm:gap-3 sm:px-6 lg:px-8">
             <a href="{{ route('catalog.index') }}" class="flex shrink-0 items-center gap-2.5">
                 <span class="grid size-9 place-items-center rounded-lg bg-brand-600 text-white shadow-raise">
                     <x-icon name="store" class="size-5" />
@@ -42,7 +42,12 @@
                 <span class="hidden text-sm font-bold tracking-tight text-ink-900 lg:block">{{ config('app.name') }}</span>
             </a>
 
-            <form action="{{ route('catalog.index') }}" method="GET" role="search" class="ml-auto min-w-0 flex-1 sm:ml-6 sm:max-w-md">
+            {{-- From medium screens up the search shares the top row. On a phone
+                 there is not enough width left beside the icons for a field
+                 anybody could type into, so below it takes the full width
+                 instead of being squeezed to a few unusable characters. --}}
+            <form action="{{ route('catalog.index') }}" method="GET" role="search"
+                  class="ml-auto hidden min-w-0 flex-1 sm:ml-6 sm:block sm:max-w-md">
                 <div class="relative">
                     <x-icon name="search" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
                     <input type="search" name="q" value="{{ request('q') }}" placeholder="Search goods or scan a barcode"
@@ -83,10 +88,22 @@
                 @endauth
             </nav>
 
-            <button type="button" class="btn-icon shrink-0 md:hidden" data-toggle="mobile-menu"
+<button type="button" class="btn-icon shrink-0 md:hidden" data-toggle="mobile-menu"
                     aria-controls="mobile-menu" aria-expanded="false" aria-label="Open classifications">
                 <x-icon name="menu" />
             </button>
+        </div>
+
+        {{-- On a phone the search gets a row of its own, edge to edge, rather
+             than the sliver left over between the logo and the icons. --}}
+        <div class="border-t border-ink-200 bg-surface px-4 py-2 sm:hidden">
+            <form action="{{ route('catalog.index') }}" method="GET" role="search">
+                <div class="relative">
+                    <x-icon name="search" class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
+                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Search goods or scan a barcode"
+                           data-live-search class="input input-sm ps-9" aria-label="Search goods">
+                </div>
+            </form>
         </div>
 
         <div id="mobile-menu" class="hidden max-h-[70vh] overflow-y-auto border-t border-ink-200 bg-surface px-4 py-3 md:hidden">

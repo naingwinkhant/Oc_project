@@ -19,25 +19,34 @@
                      data-slide
                      aria-hidden="{{ $loop->first ? 'false' : 'true' }}">
 
-                    @if ($slide['type'] === 'video')
+@if ($slide['type'] === 'video')
                         <video class="size-full object-cover"
                                data-promo-video
                                muted loop playsinline preload="metadata"
                                @if ($slide['poster'] ?? null)
                                    poster="{{ $slide['poster'] }}"
                                @endif
-                               @disabled(! $loop->first)>
+                            @disabled(! $loop->first)>
                             <source src="{{ $slide['src'] }}" type="video/mp4">
                         </video>
-                    @else
+                    @elseif ($slide['src'] ?? null)
                         <img src="{{ $slide['src'] }}"
                              alt="{{ $slide['alt'] ?? $slide['title'] }}"
                              class="size-full object-cover"
                              loading="{{ $loop->first ? 'eager' : 'lazy' }}">
+                    @else
+                        {{-- An advertisement written in words only. The frame's
+                             own gradient is the picture, so nothing is fetched
+                             and there is no blank rectangle. --}}
+                        <div class="size-full bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950"></div>
                     @endif
 
-                    {{-- Scrim so the caption stays readable on any photograph. --}}
-                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/25 to-transparent"></div>
+                    {{-- Scrim so the caption stays readable on any photograph.
+                         Over a worded slide it would only dull the colours, so
+                         it is left off there. --}}
+                    @unless ($slide['plain'] ?? false)
+                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-950/90 via-brand-950/25 to-transparent"></div>
+                    @endunless
 
                     <div class="absolute inset-x-0 bottom-0 p-3.5">
                         @if ($slide['eyebrow'] ?? null)
@@ -67,7 +76,7 @@
                         @if ($slide['url'] ?? null)
                             <a href="{{ $slide['url'] }}"
                                class="btn btn-lg mt-2.5 border-0 bg-white px-4 py-2 text-sm text-brand-800 hover:bg-white sm:px-5 sm:py-2.5 sm:text-base">
-                                View item
+                                {{ $slide['label'] ?? 'View item' }}
                             </a>
                         @endif
                     </div>

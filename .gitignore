@@ -18,6 +18,13 @@
 /public/storage
 /storage/*.key
 /storage/pail
+# Compiled Blade templates and other framework caches are built artefacts. They
+# were committed by accident, and tracked copies shadow the templates they came
+# from, so a change to a .blade.php file can appear to have no effect.
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/testing
+/storage/framework/views
 /vendor
 Homestead.json
 Homestead.yaml

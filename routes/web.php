@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AdvertisementController;
 use App\Http\Controllers\Admin\ApprovalController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -250,6 +251,10 @@ Route::middleware(['auth', 'active', 'role:admin,manager,staff'])
         // manager can write or retire one.
         Route::get('notices', [NoticeController::class, 'index'])->name('notices.index');
 
+        // Advertisements work the same way: staff can read what is showing,
+        // but writing one is a manager's call.
+        Route::get('advertisements', [AdvertisementController::class, 'index'])->name('advertisements.index');
+
         Route::middleware('role:admin,manager')->group(function () {
             Route::resource('products', ProductController::class)
                 ->except(['show', 'index'])
@@ -276,6 +281,12 @@ Route::middleware(['auth', 'active', 'role:admin,manager,staff'])
             // group, so staff can read the list without being able to write.
             Route::resource('notices', NoticeController::class)
                 ->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+            Route::resource('advertisements', AdvertisementController::class)
+                ->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+            Route::patch('advertisements/{advertisement}/move', [AdvertisementController::class, 'move'])
+                ->name('advertisements.move');
 
             Route::post('stock', [StockController::class, 'store'])->name('stock.store');
 

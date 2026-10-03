@@ -37,8 +37,9 @@
         [
             'label' => 'Administration',
             'items' => [
-                ['route' => 'admin.users.index', 'label' => 'Users & roles', 'icon' => 'users', 'permission' => 'users'],
+['route' => 'admin.users.index', 'label' => 'Users & roles', 'icon' => 'users', 'permission' => 'users'],
                 ['route' => 'admin.approvals.index', 'label' => 'New accounts', 'icon' => 'users', 'permission' => 'catalog', 'pill' => 'approvals'],
+                ['route' => 'admin.advertisements.index', 'label' => 'Advertisements', 'icon' => 'sparkles', 'permission' => 'catalog'],
                 ['route' => 'admin.activity.index', 'label' => 'Activity log', 'icon' => 'clock', 'permission' => 'catalog'],
             ],
         ],

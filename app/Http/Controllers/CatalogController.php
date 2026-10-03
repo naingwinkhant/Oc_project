@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\History\ViewHistoryService;
+use App\Models\Advertisement;
 use App\Models\Category;
 use App\Models\Product;
 use App\Support\Money;
@@ -44,15 +45,35 @@ class CatalogController extends Controller
     }
 
     /**
-     * Slides for the hero carousel: the configured video first, then the best
-     * advertising material in the catalogue — promotions and new arrivals,
-     * because those are the things a shopper is meant to notice.
+     * Slides for the hero carousel.
+     *
+     * In order: what managers wrote through the admin area, then the video
+     * named in the settings, then the best advertising material in the
+     * catalogue — promotions and new arrivals, because those are the things a
+     * shopper is meant to notice. The written advertisements come first because
+     * they were put there deliberately, and an automatic pick is the fallback
+     * for when there are none.
      *
      * @return array<int, array<string, mixed>>
      */
     private function promoSlides(): array
     {
-        $slides = [];
+        $limit = max(1, (int) config('shop.promo.slides', 5));
+
+        // Over-fetched, so the products below have room once written slides have
+        // taken some of the places.
+        $slides = Advertisement::query()
+            ->live()
+            ->orderBy('position')
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->get()
+            ->map(fn (Advertisement $advertisement) => $advertisement->toSlide())
+            ->all();
+
+        if (count($slides) >= $limit) {
+            return $slides;
+        }
 
         $video = config('shop.promo.video');
 
@@ -75,6 +96,7 @@ class CatalogController extends Controller
         }
 
         $limit = max(1, (int) config('shop.promo.slides', 5));
+        $remaining = $limit - count($slides);
 
         $products = Product::query()
             ->with('category')
@@ -85,10 +107,10 @@ class CatalogController extends Controller
             ->latest('id')
             // Over-fetch, because anything unsellable or without a real photo
             // is dropped below and must not eat a slot.
-            ->limit($limit * 4)
+            ->limit(max(1, $remaining) * 4)
             ->get()
             ->filter(fn (Product $product) => $product->isSellable() && $product->imageUrl())
-            ->take($limit);
+            ->take($remaining);
 
         foreach ($products as $product) {
             $slides[] = [
